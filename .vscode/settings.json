@@ -1,0 +1,12 @@
+{
+    "dotnet.defaultSolution": "Backend.slnx",
+    "css.validate": false,
+    "scss.validate": false,
+    "less.validate": false,
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.includeLanguages": {
+        "javascript": "javascriptreact",
+        "typescript": "typescriptreact",
+        "plaintext": "html"
+    }
+}

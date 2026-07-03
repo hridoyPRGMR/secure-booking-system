@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="Backend/SecureBooking.Api/SecureBooking.Api.csproj" />
+    <Project Path="Backend/SecureBooking.Domain/SecureBooking.Domain.csproj" />
+    <Project Path="Backend/SecureBooking.Shared/SecureBooking.Shared.csproj" />
+    <Project Path="Backend/SecureBooking.Application/SecureBooking.Application.csproj" />
+    <Project Path="Backend/SecureBooking.Infrastructure/SecureBooking.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="Backend/Backend.csproj" />
+</Solution>
