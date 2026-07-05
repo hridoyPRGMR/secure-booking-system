@@ -6,14 +6,9 @@ namespace SecureBooking.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class PingController : ControllerBase
+public sealed class PingController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public PingController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     [HttpPost]
     public async Task<IActionResult> Post(PingCommand request, CancellationToken cancellationToken)
