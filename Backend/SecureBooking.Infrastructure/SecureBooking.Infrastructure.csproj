@@ -7,14 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9"> 
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SecureBooking.Application\SecureBooking.Application.csproj" />
     <ProjectReference Include="..\SecureBooking.Domain\SecureBooking.Domain.csproj" />
   </ItemGroup>
 

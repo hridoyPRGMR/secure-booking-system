@@ -3,10 +3,8 @@ using SecureBooking.Shared.Enums;
 
 namespace SecureBooking.Domain.Entities;
 
-public class Booking
+public class Booking : Entity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-
     public Guid UserId { get; set; }
     public User? User { get; set; }
 
@@ -20,6 +18,4 @@ public class Booking
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
     public string? Notes { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

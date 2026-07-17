@@ -97,7 +97,7 @@ Code-First migrations are managed via Entity Framework Core.
 cd Backend
 
 # Create new migration after modifying DbContext or entities
-dotnet ef migrations add MigrationName \
+dotnet ef migrations add Initial \
   --project SecureBooking.Infrastructure \
   --startup-project SecureBooking.Api
 

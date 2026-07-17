@@ -3,10 +3,8 @@ using SecureBooking.Shared.Enums;
 
 namespace SecureBooking.Domain.Entities;
 
-public class Room
+public class Room : Entity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-
     public string Name { get; set; } = string.Empty;
 
     public RoomType Type { get; set; }

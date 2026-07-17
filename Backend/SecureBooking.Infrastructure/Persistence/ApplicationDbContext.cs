@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
 namespace SecureBooking.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IUnitOfWork
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -13,6 +14,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Room> Rooms { get; set; } = null!;
     public DbSet<Booking> Bookings { get; set; } = null!;
 
+    Task<int>IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
+        => base.SaveChangesAsync(cancellationToken);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -21,6 +25,11 @@ public class ApplicationDbContext : DbContext
         {
             b.HasKey(u => u.Id);
             b.Property(u => u.Email).IsRequired().HasMaxLength(256);
+            b.Property(u=> u.FirstName).IsRequired().HasMaxLength(100);
+            b.Property(u=> u.LastName).IsRequired().HasMaxLength(100);
+            b.Property(u=> u.PasswordHash).IsRequired().HasMaxLength(256);
+
+            b.HasIndex(u=> u.Email).IsUnique();
         });
 
         modelBuilder.Entity<Room>(b =>

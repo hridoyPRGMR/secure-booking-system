@@ -2,11 +2,41 @@ using System;
 
 namespace SecureBooking.Domain.Entities;
 
-public class User
+public class User : Entity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
+    public string Email { get; set; }
+    public string PasswordHash { get; private set; } = default!;
+    public bool IsActive { get; private set; }
+
+    public string? RefreshTokenHash { get; private set; }
+    public DateTime? RefreshTokenExpiry { get; private set; }
+
+    private User() { }
+
+    public User(
+        string firstName,
+        string lastName,
+        string email,
+        string passwordHash
+    )
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email.ToLowerInvariant();
+        PasswordHash = passwordHash;
+        IsActive = true;
+    }
+
+    public void ChangePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+    }
+
+    public void SetRefreshToken(string tokenHash, DateTime expiry)
+    {
+        RefreshTokenHash = tokenHash;
+        RefreshTokenExpiry = expiry;
+    }
 }
