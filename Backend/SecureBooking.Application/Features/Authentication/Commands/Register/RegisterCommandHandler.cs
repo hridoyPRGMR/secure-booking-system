@@ -40,6 +40,7 @@ public sealed class RegisterCommandHandler(
         return new AuthResponse(
             token.AccessToken,
             token.AccessTokenExpiresAt,
+            string.Empty,
             user.Id,
             user.FirstName,
             user.LastName,

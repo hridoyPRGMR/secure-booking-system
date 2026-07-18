@@ -8,7 +8,8 @@ public sealed class LoginCommandHnadler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator tokenGenerator,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IRefreshTokenService refreshTokenService
     ) : IRequestHandler<LoginCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -21,13 +22,14 @@ public sealed class LoginCommandHnadler(
 
 
         var accessToken = tokenGenerator.Generate(user);
-        // var refreshToken = refre
+        var refreshToken = await refreshTokenService.CreateAsync(user,cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse(
             accessToken.AccessToken,
             accessToken.AccessTokenExpiresAt,
+            refreshToken.Token,
             user.Id,
             user.FirstName,
             user.LastName,
