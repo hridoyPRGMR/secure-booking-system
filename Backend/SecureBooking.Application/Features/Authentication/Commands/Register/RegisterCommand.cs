@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace SecureBooking.Application.Features.Authentication.Commands
+namespace SecureBooking.Application.Features.Authentication.Commands.Register
 {
     public sealed record RegisterCommand(
         string FirstName,

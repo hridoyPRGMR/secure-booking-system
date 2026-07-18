@@ -4,6 +4,6 @@ namespace SecureBooking.Application.Common.Authentication
 {
     public interface IJwtTokenGenerator
     {
-        string Generate(User user);
+        TokenResult Generate(User user);
     }
 }

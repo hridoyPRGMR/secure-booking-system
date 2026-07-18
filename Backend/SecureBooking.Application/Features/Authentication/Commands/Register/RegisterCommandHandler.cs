@@ -38,8 +38,8 @@ public sealed class RegisterCommandHandler(
         var token = jwtTokenGenerator.Generate(user);
 
         return new AuthResponse(
-            token,
-            DateTime.UtcNow.AddMinutes(15),
+            token.AccessToken,
+            token.AccessTokenExpiresAt,
             user.Id,
             user.FirstName,
             user.LastName,

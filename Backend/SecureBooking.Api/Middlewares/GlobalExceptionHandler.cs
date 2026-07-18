@@ -4,49 +4,56 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecureBooking.Api.Infrastructure;
 
-public class GlobalExceptionHandler : IExceptionHandler
+public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    private readonly ILogger<GlobalExceptionHandler> _logger;
-
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
-    {
-        _logger = logger;
-    }
-
     public async ValueTask<bool> TryHandleAsync(
-        HttpContext httpContext, 
-        Exception exception, 
+        HttpContext httpContext,
+        Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not ValidationException validationException)
+        return exception switch
         {
-            // Return false to let other handlers or default middleware handle it
-            return false; 
-        }
+            ValidationException ex => await HandleValidationError(httpContext, ex, cancellationToken),
+            UnauthorizedAccessException ex => await HandleUnauthorized(httpContext, ex, cancellationToken),
+            _ => false  
+        };
+    }
 
-        _logger.LogWarning(exception, "Validation failed: {Message}", exception.Message);
+    private async Task<bool> HandleValidationError(HttpContext context, ValidationException ex, CancellationToken ct)
+    {
+        logger.LogWarning(ex, "Validation failed: {Message}", ex.Message);
 
-        // Extract errors into a structured format
-        var errors = validationException.Errors
+        var errors = ex.Errors
             .GroupBy(e => e.PropertyName)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(e => e.ErrorMessage).ToArray()
-            );
+            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
 
-        // Format according to RFC 7807 (Problem Details)
-        var problemDetails = new ProblemDetails
+        var details = new ValidationProblemDetails(errors)
         {
             Status = StatusCodes.Status400BadRequest,
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            Title = "Validation Regrettably Failed",
+            Title = "Validation Failed",
             Detail = "One or more validation errors occurred."
         };
-        problemDetails.Extensions.Add("errors", errors);
 
-        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(details, ct);
+        return true;
+    }
 
+    private async Task<bool> HandleUnauthorized(HttpContext context, UnauthorizedAccessException ex, CancellationToken ct)
+    {
+        logger.LogWarning(ex, "Unauthorized access");
+
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2", 
+            Title = "Unauthorized",
+            Detail = ex.Message
+        };
+
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(details, ct);
         return true;
     }
 }

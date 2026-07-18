@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace SecureBooking.Application.Features.Authentication.Commands;
+namespace SecureBooking.Application.Features.Authentication.Commands.Register;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {

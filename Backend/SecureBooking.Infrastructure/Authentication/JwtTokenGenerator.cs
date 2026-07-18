@@ -13,14 +13,21 @@ namespace SecureBooking.Infrastructure.Authentication
     {
         private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
-        public string Generate(User user)
+        public DateTime AccessTokenExpiresAt { get; private set; }
+
+        public TokenResult Generate(User user)
         {
+            var expiresAt = DateTime.UtcNow.AddMinutes(
+                _jwtSettings.AccessTokenExpirationMinutes);
+            
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("firstName", user.FirstName)
-        };
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
+                new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_jwtSettings.Secret));
@@ -36,7 +43,9 @@ namespace SecureBooking.Infrastructure.Authentication
                 expires: DateTime.UtcNow.AddMinutes(15),
                 signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return TokenResult.FromAccessToken(accessToken,expiresAt);
         }
     }
 }
