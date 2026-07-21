@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace SecureBooking.Application.Features.Authentication;
 
 public sealed record AuthResponse(
     string AccessToken,
     DateTime ExpiresAt,
-    string RefreshToken,
+    [property: JsonIgnore] string RefreshToken,
+    [property: JsonIgnore] DateTime? RefreshTokenExpiresAt,
     Guid UserId,
     string FirstName,
     string LastName,

@@ -30,6 +30,7 @@ public sealed class LoginCommandHnadler(
             accessToken.AccessToken,
             accessToken.AccessTokenExpiresAt,
             refreshToken.Token,
+            refreshToken.ExpiresAt,
             user.Id,
             user.FirstName,
             user.LastName,

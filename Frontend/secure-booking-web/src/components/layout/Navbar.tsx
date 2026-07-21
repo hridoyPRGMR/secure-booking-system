@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, UserCircle, LogOut, Settings } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
@@ -14,6 +15,7 @@ export default function Navbar() {
   const profileRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 rounded-md transition ${
@@ -53,9 +55,9 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  function handleLogout() {
-    // TODO: wire up to real auth (clear token/cookie, call /api/auth/logout, etc.)
+  async function handleLogout() {
     setProfileOpen(false);
+    await logout();
     navigate("/login");
   }
 

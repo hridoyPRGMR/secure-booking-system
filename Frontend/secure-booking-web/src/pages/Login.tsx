@@ -1,23 +1,19 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'react-toastify'
 
-import { authService } from "../features/auth/authService";
-import { loginSchema, LoginFormData } from "../features/auth/authValidation";
-
-interface ApiValidationError {
-  detail?: string;
-  errors?: Record<string, string[]>;
-}
+import { useAuth } from '../hooks/useAuth'
+import { loginSchema, LoginFormData } from '../features/auth/authValidation'
 
 export default function Login() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [generalError, setGeneralError] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
+  const [generalError, setGeneralError] = useState<string | null>(null)
 
-  const from = location.state?.from?.pathname || "/";
+  const from = (location.state as { from?: Location })?.from?.pathname || '/'
 
   const {
     register,
@@ -26,47 +22,29 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "", remember: false },
-  });
+    defaultValues: { email: '', password: '', remember: false },
+  })
 
   const onSubmit = async (data: LoginFormData) => {
-    setGeneralError(null);
+    setGeneralError(null)
 
+    const result = await login(data.email, data.password)
 
-
-    try {
-      const response = await authService.login({
-        email: data.email,
-        password: data.password
-      });
-
-      console.log("Auth Response: "+ response);
-      
-      localStorage.setItem("token", response.accessToken);
-      localStorage.setItem("user", JSON.stringify({
-        id: response.id,
-        email: response.email,
-        name: `${response.firstName} ${response.lastName}`
-      }));
-
-      navigate(from, { replace: true });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorData = error.response.data as ApiValidationError;
-
-        if (error.response.status === 400 && errorData.errors) {
-          Object.entries(errorData.errors).forEach(([field, messages]) => {
-            const formField = field.toLowerCase() as keyof LoginFormData;
-            setError(formField, { type: "server", message: messages[0] });
-          });
-        } else {
-          setGeneralError(errorData.detail || "Invalid email or password.");
-        }
-      } else {
-        setGeneralError("A network error occurred. Please try again.");
-      }
+    if (result.success) {
+      toast.success('Welcome back!')
+      navigate(from, { replace: true })
+      return
     }
-  };
+
+    if (result.errors) {
+      Object.entries(result.errors).forEach(([field, messages]) => {
+        const formField = field.toLowerCase() as keyof LoginFormData
+        setError(formField, { type: 'server', message: messages[0] })
+      })
+    } else {
+      setGeneralError(result.message ?? 'Invalid email or password.')
+    }
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
@@ -87,9 +65,9 @@ export default function Login() {
               type="email"
               disabled={isSubmitting}
               placeholder="john@example.com"
-              {...register("email")}
+              {...register('email')}
               className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                errors.email ? "border-red-500 focus:border-red-500" : "border-gray-300"
+                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
               }`}
             />
             {errors.email && (
@@ -103,9 +81,9 @@ export default function Login() {
               type="password"
               disabled={isSubmitting}
               placeholder="••••••••"
-              {...register("password")}
+              {...register('password')}
               className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                errors.password ? "border-red-500 focus:border-red-500" : "border-gray-300"
+                errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
               }`}
             />
             {errors.password && (
@@ -118,7 +96,7 @@ export default function Login() {
               <input
                 type="checkbox"
                 disabled={isSubmitting}
-                {...register("remember")}
+                {...register('remember')}
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
               />
               Remember me
@@ -134,15 +112,17 @@ export default function Login() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
           >
-            {isSubmitting ? "Logging in..." : "Login"}
+            {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <button className="font-medium text-indigo-600 hover:underline">Sign Up</button>
+          Don't have an account?{' '}
+          <Link to="/signup" className="font-medium text-indigo-600 hover:underline">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SecureBooking.Application.Features.Authentication.Commands.Login;
+using SecureBooking.Application.Features.Authentication.Commands.Logout;
 using SecureBooking.Application.Features.Authentication.Commands.Refresh;
 using SecureBooking.Application.Features.Authentication.Commands.Register;
 
@@ -10,11 +11,15 @@ namespace SecureBooking.Api.Controllers
     [Route("api/auth")]
     public class AuthenticationController(IMediator mediator) : ControllerBase
     {
+        private const string RefreshTokenCookieName = "refreshToken";
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterCommand command, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(command, cancellationToken);
+
+            if (response.RefreshTokenExpiresAt is { } expiresAt)
+                AppendRefreshTokenCookie(response.RefreshToken, expiresAt);
 
             return Created(string.Empty, response);
         }
@@ -24,6 +29,9 @@ namespace SecureBooking.Api.Controllers
         {
             var response = await mediator.Send(command, cancellationToken);
 
+            if (response.RefreshTokenExpiresAt is { } expiresAt)
+                AppendRefreshTokenCookie(response.RefreshToken, expiresAt);
+
             return Ok(response);
         }
 
@@ -31,7 +39,7 @@ namespace SecureBooking.Api.Controllers
         public async Task<IActionResult> RefreshToken(
             CancellationToken cancellationToken)
         {
-            var refreshToken = Request.Cookies["refreshToken"];
+            var refreshToken = Request.Cookies[RefreshTokenCookieName];
 
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return Unauthorized();
@@ -40,18 +48,36 @@ namespace SecureBooking.Api.Controllers
                 new RefreshTokenCommand(refreshToken),
                 cancellationToken);
 
+            AppendRefreshTokenCookie(response.RefreshToken, response.RefreshTokenExpiresAt);
+
+            return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+        {
+            var refreshToken = Request.Cookies[RefreshTokenCookieName];
+
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+                await mediator.Send(new LogoutCommand(refreshToken), cancellationToken);
+
+            Response.Cookies.Delete(RefreshTokenCookieName);
+
+            return NoContent();
+        }
+
+        private void AppendRefreshTokenCookie(string refreshToken, DateTime expiresAt)
+        {
             Response.Cookies.Append(
-                "refreshToken",
-                response.RefreshToken,
+                RefreshTokenCookieName,
+                refreshToken,
                 new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
-                    Expires = response.RefreshTokenExpiresAt
+                    Expires = expiresAt
                 });
-
-            return Ok(response);
         }
     }
 }

@@ -87,7 +87,11 @@ public class RefreshTokenService(
             accessToken.AccessToken,
             accessToken.AccessTokenExpiresAt,
             newRefreshToken.Token,
-            newRefreshToken.ExpiresAt);
+            newRefreshToken.ExpiresAt,
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Email);
     }
 
      private static string ComputeHash(string token)

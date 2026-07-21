@@ -9,7 +9,8 @@ public sealed class RegisterCommandHandler(
     IUserRepository users,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IRefreshTokenService refreshTokenService)
         : IRequestHandler<RegisterCommand, AuthResponse>
 {
 
@@ -35,12 +36,17 @@ public sealed class RegisterCommandHandler(
 
         await users.AddAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
         var token = jwtTokenGenerator.Generate(user);
+        var refreshToken = await refreshTokenService.CreateAsync(user, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse(
             token.AccessToken,
             token.AccessTokenExpiresAt,
-            string.Empty,
+            refreshToken.Token,
+            refreshToken.ExpiresAt,
             user.Id,
             user.FirstName,
             user.LastName,

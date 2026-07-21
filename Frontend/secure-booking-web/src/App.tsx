@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/room/RoomDetails";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 import MyBookings from "./pages/MyBookings";
 import ProfileSettings from "./components/profile/ProfileSettings";
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
   },
   {
     element: <Layout />,

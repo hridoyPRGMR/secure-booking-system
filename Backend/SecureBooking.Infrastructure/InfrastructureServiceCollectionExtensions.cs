@@ -48,9 +48,12 @@ public static class InfrastructureServiceCollectionExtensions
         
         services.AddScoped<IPasswordHasher,PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator,JwtTokenGenerator>();
+        services.AddScoped<IRefreshTokenGenerator,RefreshTokenGenerator>();
+        services.AddScoped<IRefreshTokenService,RefreshTokenService>();
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository,UserRepository>();
+        services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
 
         services.AddScoped<IUnitOfWork>(sp=> 
             sp.GetRequiredService<ApplicationDbContext>());
