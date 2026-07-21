@@ -1,0 +1,184 @@
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
+        <tr>
+          @if (selectable()) {
+            <th class="w-10 px-4 py-3">
+              <input
+                type="checkbox"
+                class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                [checked]="allOnPageSelected()"
+                [indeterminate]="someOnPageSelected()"
+                (change)="toggleAllOnPage()"
+                aria-label="Select all rows on this page"
+              />
+            </th>
+          }
+
+          @for (col of columns(); track col.key) {
+            <th
+              class="px-4 py-3 font-semibold"
+              [style.width]="col.width"
+              [class.text-center]="col.align === 'center'"
+              [class.text-right]="col.align === 'right'"
+              [class.cursor-pointer]="col.sortable"
+              [class.select-none]="col.sortable"
+              (click)="onHeaderClick(col)"
+            >
+              <span class="inline-flex items-center gap-1">
+                {{ col.header }}
+                @if (col.sortable) {
+                  <span class="text-slate-400">
+                    @switch (sortIndicator(col)) {
+                      @case ('asc') { ▲ }
+                      @case ('desc') { ▼ }
+                      @default { ⇅ }
+                    }
+                  </span>
+                }
+              </span>
+            </th>
+          }
+
+          @if (rowActions().length) {
+            <th class="w-16 px-4 py-3 text-right">Actions</th>
+          }
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        @if (isLoading()) {
+          @for (skeletonRow of [1, 2, 3, 4, 5]; track skeletonRow) {
+            <tr>
+              @if (selectable()) {
+                <td class="px-4 py-3"><div class="h-4 w-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700"></div></td>
+              }
+              @for (col of columns(); track col.key) {
+                <td class="px-4 py-3">
+                  <div class="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-700"></div>
+                </td>
+              }
+              @if (rowActions().length) {
+                <td class="px-4 py-3"><div class="ml-auto h-4 w-6 animate-pulse rounded bg-slate-200 dark:bg-slate-700"></div></td>
+              }
+            </tr>
+          }
+        } @else if (pagedData().length === 0) {
+          <tr>
+            <td
+              [attr.colspan]="columns().length + (selectable() ? 1 : 0) + (rowActions().length ? 1 : 0)"
+              class="px-4 py-16 text-center"
+            >
+              <div class="flex flex-col items-center gap-2 text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5M3.75 15h16.5M4.5 4.5h15A.75.75 0 0120.25 5.25v13.5a.75.75 0 01-.75.75h-15a.75.75 0 01-.75-.75V5.25a.75.75 0 01.75-.75z" />
+                </svg>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ emptyMessage() }}</p>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          @for (row of pagedData(); track trackBy()(row)) {
+            <tr class="transition hover:bg-slate-50 dark:hover:bg-slate-700/40">
+              @if (selectable()) {
+                <td class="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    [checked]="isSelected(row)"
+                    (change)="toggleRow(row)"
+                    [attr.aria-label]="'Select row'"
+                  />
+                </td>
+              }
+
+              @for (col of columns(); track col.key) {
+                <td
+                  class="px-4 py-3 text-slate-700 dark:text-slate-200"
+                  [class.text-center]="col.align === 'center'"
+                  [class.text-right]="col.align === 'right'"
+                >
+                  @if (col.cellTemplate; as tpl) {
+                    <ng-container *ngTemplateOutlet="tpl; context: cellContext(row, col)" />
+                  } @else {
+                    {{ cellValue(row, col) }}
+                  }
+                </td>
+              }
+
+              @if (rowActions().length) {
+                <td class="relative px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    class="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+                    (click)="toggleMenu(trackBy()(row))"
+                    aria-haspopup="true"
+                    [attr.aria-expanded]="openMenuRowId() === trackBy()(row)"
+                    aria-label="Row actions"
+                  >
+                    ⋮
+                  </button>
+
+                  @if (openMenuRowId() === trackBy()(row)) {
+                    <div class="absolute right-4 top-10 z-10 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 text-left shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                      @for (action of visibleActions(row); track action.id) {
+                        <button
+                          type="button"
+                          class="block w-full px-3 py-2 text-left text-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-slate-700"
+                          [class.text-red-600]="action.variant === 'danger'"
+                          [disabled]="action.disabled?.(row)"
+                          (click)="onAction(action, row)"
+                        >
+                          {{ action.label }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-2">
+      <span>Rows per page</span>
+      <select
+        class="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+        [value]="pageSize()"
+        (change)="onPageSizeChange($event)"
+      >
+        @for (size of pageSizeOptions(); track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+      <span class="hidden sm:inline">
+        Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ clientTotal() }}
+      </span>
+    </div>
+
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 px-2 py-1 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600 dark:hover:bg-slate-700"
+        [disabled]="page() <= 1"
+        (click)="goToPage(page() - 1)"
+      >
+        Prev
+      </button>
+      <span class="px-2">Page {{ page() }} of {{ totalPages() }}</span>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 px-2 py-1 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600 dark:hover:bg-slate-700"
+        [disabled]="page() >= totalPages()"
+        (click)="goToPage(page() + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>

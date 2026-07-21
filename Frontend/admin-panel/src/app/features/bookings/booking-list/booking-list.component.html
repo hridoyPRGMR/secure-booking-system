@@ -1,0 +1,71 @@
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Bookings</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Reservations across every hotel.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+      (click)="openCreate()"
+    >
+      + Add Booking
+    </button>
+  </div>
+
+  <app-grid-filter [fields]="filterFields" (filtersChanged)="onFiltersChanged($event)" />
+
+  <app-data-grid
+    [data]="items()"
+    [columns]="columns()"
+    [rowActions]="rowActions"
+    [trackBy]="trackById"
+    [isLoading]="isLoading()"
+    [serverSide]="true"
+    [total]="total()"
+    [(page)]="page"
+    [(pageSize)]="pageSize"
+    [(sortBy)]="sortBy"
+    [(sortOrder)]="sortOrder"
+    emptyMessage="No bookings yet."
+    (actionTriggered)="onRowAction($event)"
+  />
+</div>
+
+<ng-template #statusCell let-row>
+  @switch (row.status) {
+    @case ('Confirmed') {
+      <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        Confirmed
+      </span>
+    }
+    @case ('Pending') {
+      <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+        <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+        Pending
+      </span>
+    }
+    @case ('Cancelled') {
+      <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
+        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+        Cancelled
+      </span>
+    }
+  }
+</ng-template>
+
+<ng-template #priceCell let-value="value">
+  {{ value | currency: 'USD' }}
+</ng-template>
+
+<app-dynamic-slider [(isOpen)]="sliderOpen" [title]="drawerTitle()" position="right" size="md">
+  <app-booking-form
+    [mode]="mode()"
+    [initialValue]="formInitialValue()"
+    [submitting]="submitting()"
+    [serverError]="formError()"
+    (saved)="onFormSaved($event)"
+    (cancelled)="sliderOpen.set(false)"
+  />
+</app-dynamic-slider>

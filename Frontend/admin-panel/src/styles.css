@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-surface: 255 255 255;
+  --color-surface-alt: 248 250 252;
+  --color-border: 226 232 240;
+  --color-text: 15 23 42;
+  --color-text-muted: 100 116 139;
+}
+
+.dark {
+  --color-surface: 15 23 42;
+  --color-surface-alt: 30 41 59;
+  --color-border: 51 65 85;
+  --color-text: 241 245 249;
+  --color-text-muted: 148 163 184;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: rgb(var(--color-surface-alt));
+  color: rgb(var(--color-text));
+}
+
+/* Smooth theme + drawer transitions app-wide */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-border));
+  border-radius: 9999px;
+}

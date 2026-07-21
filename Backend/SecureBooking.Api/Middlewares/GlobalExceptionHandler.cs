@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SecureBooking.Application.Common.Exceptions;
 
 namespace SecureBooking.Api.Infrastructure;
 
@@ -15,8 +16,29 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         {
             ValidationException ex => await HandleValidationError(httpContext, ex, cancellationToken),
             UnauthorizedAccessException ex => await HandleUnauthorized(httpContext, ex, cancellationToken),
-            _ => false  
+            NotFoundException ex => await HandleProblem(httpContext, StatusCodes.Status404NotFound, "Not Found",
+                "https://tools.ietf.org/html/rfc9110#section-15.5.5", ex, cancellationToken),
+            ConflictException ex => await HandleProblem(httpContext, StatusCodes.Status409Conflict, "Conflict",
+                "https://tools.ietf.org/html/rfc9110#section-15.5.10", ex, cancellationToken),
+            _ => false
         };
+    }
+
+    private async Task<bool> HandleProblem(HttpContext context, int status, string title, string type, Exception ex, CancellationToken ct)
+    {
+        logger.LogWarning(ex, "{Title}: {Message}", title, ex.Message);
+
+        var details = new ProblemDetails
+        {
+            Status = status,
+            Type = type,
+            Title = title,
+            Detail = ex.Message
+        };
+
+        context.Response.StatusCode = status;
+        await context.Response.WriteAsJsonAsync(details, ct);
+        return true;
     }
 
     private async Task<bool> HandleValidationError(HttpContext context, ValidationException ex, CancellationToken ct)

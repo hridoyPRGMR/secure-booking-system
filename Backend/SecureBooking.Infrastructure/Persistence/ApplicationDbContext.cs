@@ -4,7 +4,7 @@ using SecureBooking.Domain.Entities;
 
 namespace SecureBooking.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IUnitOfWork
+public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -13,6 +13,9 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Room> Rooms { get; set; } = null!;
     public DbSet<Booking> Bookings { get; set; } = null!;
+    public DbSet<Hotel> Hotels { get; set; } = null!;
+    public DbSet<Location> Locations { get; set; } = null!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
     Task<int>IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
@@ -36,13 +39,50 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
         {
             b.HasKey(r => r.Id);
             b.Property(r => r.Name).IsRequired().HasMaxLength(200);
+            b.Property(r => r.PricePerNight).HasPrecision(10, 2);
+
+            b.HasOne(r => r.Hotel)
+                .WithMany(h => h.Rooms)
+                .HasForeignKey(r => r.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Booking>(b =>
         {
             b.HasKey(x => x.Id);
-            b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
-            b.HasOne(x => x.Room).WithMany().HasForeignKey(x => x.RoomId);
+            b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(x => x.Room).WithMany(r => r.Bookings).HasForeignKey(x => x.RoomId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Location>(b =>
+        {
+            b.HasKey(l => l.Id);
+            b.Property(l => l.City).IsRequired().HasMaxLength(100);
+            b.Property(l => l.Country).IsRequired().HasMaxLength(100);
+            b.Property(l => l.Address).IsRequired().HasMaxLength(300);
+        });
+
+        modelBuilder.Entity<Hotel>(b =>
+        {
+            b.HasKey(h => h.Id);
+            b.Property(h => h.Name).IsRequired().HasMaxLength(200);
+
+            b.HasOne(h => h.Location)
+                .WithMany(l => l.Hotels)
+                .HasForeignKey(h => h.LocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RefreshToken>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.Property(t => t.TokenHash).IsRequired();
+            b.HasIndex(t => t.TokenHash).IsUnique();
+
+            b.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

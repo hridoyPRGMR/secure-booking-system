@@ -4,20 +4,23 @@ using SecureBooking.Domain.Entities;
 
 namespace SecureBooking.Infrastructure.Persistence.Repositories;
 
-public class RefreshTokenRepository(DbSet<RefreshToken> dbset) : IRefreshTokenRepository
+public class RefreshTokenRepository(ApplicationDbContext context)
+    : Repository<RefreshToken>(context), IRefreshTokenRepository
 {
-    public async Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
+    // AddAsync(RefreshToken, CancellationToken) is already satisfied by the base Repository<T> implementation.
+
+    public async Task<RefreshToken?> GetByHashAsync(string hash, CancellationToken cancellationToken)
     {
-        await dbset.AddAsync(refreshToken,cancellationToken);
+        return await _dbSet.FirstOrDefaultAsync(t => t.TokenHash == hash, cancellationToken);
     }
 
-    public Task<RefreshToken?> GetByHashAsync(string hash, CancellationToken cancellationToken)
+    public async Task RevokeAllForUserAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
-    }
+        var activeTokens = await _dbSet
+            .Where(t => t.UserId == id && t.RevokedAt == null)
+            .ToListAsync(cancellationToken);
 
-    public Task RevokeAllForUserAsync(Guid id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        foreach (var token in activeTokens)
+            token.Revoke();
     }
 }

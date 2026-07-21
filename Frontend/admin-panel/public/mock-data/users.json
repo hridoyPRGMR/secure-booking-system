@@ -1,0 +1,14 @@
+[
+  { "id": "u-1", "firstName": "Priya", "lastName": "Sharma", "email": "priya.sharma@example.com", "role": "admin", "status": "active", "avatarColor": "bg-indigo-500", "createdAt": "2025-01-14T09:20:00Z" },
+  { "id": "u-2", "firstName": "Daniel", "lastName": "Okafor", "email": "daniel.okafor@example.com", "role": "editor", "status": "active", "avatarColor": "bg-emerald-500", "createdAt": "2025-02-02T11:05:00Z" },
+  { "id": "u-3", "firstName": "Mei", "lastName": "Lin", "email": "mei.lin@example.com", "role": "viewer", "status": "invited", "avatarColor": "bg-amber-500", "createdAt": "2025-02-20T14:45:00Z" },
+  { "id": "u-4", "firstName": "Carlos", "lastName": "Mendes", "email": "carlos.mendes@example.com", "role": "editor", "status": "suspended", "avatarColor": "bg-rose-500", "createdAt": "2025-03-01T08:15:00Z" },
+  { "id": "u-5", "firstName": "Fatima", "lastName": "Al-Sayed", "email": "fatima.alsayed@example.com", "role": "admin", "status": "active", "avatarColor": "bg-sky-500", "createdAt": "2025-03-11T16:30:00Z" },
+  { "id": "u-6", "firstName": "Jonas", "lastName": "Weber", "email": "jonas.weber@example.com", "role": "viewer", "status": "active", "avatarColor": "bg-purple-500", "createdAt": "2025-03-22T10:00:00Z" },
+  { "id": "u-7", "firstName": "Aiko", "lastName": "Tanaka", "email": "aiko.tanaka@example.com", "role": "editor", "status": "invited", "avatarColor": "bg-teal-500", "createdAt": "2025-04-02T13:10:00Z" },
+  { "id": "u-8", "firstName": "Liam", "lastName": "O'Brien", "email": "liam.obrien@example.com", "role": "viewer", "status": "suspended", "avatarColor": "bg-orange-500", "createdAt": "2025-04-18T17:40:00Z" },
+  { "id": "u-9", "firstName": "Sofia", "lastName": "Rossi", "email": "sofia.rossi@example.com", "role": "admin", "status": "active", "avatarColor": "bg-pink-500", "createdAt": "2025-05-05T09:55:00Z" },
+  { "id": "u-10", "firstName": "Ahmed", "lastName": "Hassan", "email": "ahmed.hassan@example.com", "role": "editor", "status": "active", "avatarColor": "bg-cyan-500", "createdAt": "2025-05-19T12:25:00Z" },
+  { "id": "u-11", "firstName": "Grace", "lastName": "Kim", "email": "grace.kim@example.com", "role": "viewer", "status": "invited", "avatarColor": "bg-lime-500", "createdAt": "2025-06-02T15:00:00Z" },
+  { "id": "u-12", "firstName": "Noah", "lastName": "Fischer", "email": "noah.fischer@example.com", "role": "editor", "status": "active", "avatarColor": "bg-fuchsia-500", "createdAt": "2025-06-14T10:40:00Z" }
+]
