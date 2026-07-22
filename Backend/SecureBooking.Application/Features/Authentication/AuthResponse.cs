@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace SecureBooking.Application.Features.Authentication;
@@ -10,5 +11,7 @@ public sealed record AuthResponse(
     Guid UserId,
     string FirstName,
     string LastName,
-    string Email
+    string Email,
+    IReadOnlyList<string> Roles,
+    IReadOnlyList<string> Permissions
 );

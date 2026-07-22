@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SecureBooking.Application.Common.Security;
 using SecureBooking.Application.Features.Locations;
 
 namespace SecureBooking.Api.Controllers;
@@ -11,6 +12,7 @@ namespace SecureBooking.Api.Controllers;
 public class LocationsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = Policies.LocationsView)]
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
@@ -25,6 +27,7 @@ public class LocationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = Policies.LocationsView)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new GetLocationByIdQuery(id), cancellationToken);
@@ -32,6 +35,7 @@ public class LocationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = Policies.LocationsCreate)]
     public async Task<IActionResult> Create(CreateLocationCommand command, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -39,6 +43,7 @@ public class LocationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = Policies.LocationsUpdate)]
     public async Task<IActionResult> Update(Guid id, UpdateLocationCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id) return BadRequest("Route id does not match payload id.");
@@ -47,6 +52,7 @@ public class LocationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Policies.LocationsDelete)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         await mediator.Send(new DeleteLocationCommand(id), cancellationToken);

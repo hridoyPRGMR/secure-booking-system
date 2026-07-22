@@ -36,7 +36,9 @@ public sealed class ListUsersQueryHandler(IApplicationDbContext db)
         var items = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(u => new UserResponse(u.Id, u.FirstName, u.LastName, u.Email, u.IsActive, u.CreatedAt))
+            .Select(u => new UserResponse(
+                u.Id, u.FirstName, u.LastName, u.Email, u.IsActive, u.CreatedAt,
+                u.Roles.Select(r => new RoleSummary(r.Id, r.Name)).ToList()))
             .ToListAsync(cancellationToken);
 
         return new PagedResult<UserResponse>(items, request.Page, request.PageSize, total);

@@ -3,6 +3,8 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   email: string;
+  roles: string[];
+  permissions: string[];
 }
 
 export interface AuthResponse {
@@ -12,6 +14,8 @@ export interface AuthResponse {
   firstName: string;
   lastName: string;
   email: string;
+  roles: string[];
+  permissions: string[];
 }
 
 export interface RefreshResponse {
@@ -21,6 +25,8 @@ export interface RefreshResponse {
   firstName: string;
   lastName: string;
   email: string;
+  roles: string[];
+  permissions: string[];
 }
 
 export interface ApiProblemDetails {

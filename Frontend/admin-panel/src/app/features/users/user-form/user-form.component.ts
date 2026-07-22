@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Role } from '../../roles/models/role.model';
+import { RoleService } from '../../roles/services/role.service';
 import { UserFormValue } from '../models/user.model';
 
 @Component({
@@ -67,6 +69,29 @@ import { UserFormValue } from '../models/user.model';
         </p>
       }
 
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Roles</label>
+        @if (rolesLoading()) {
+          <p class="text-sm text-slate-400">Loading roles…</p>
+        } @else if (availableRoles().length === 0) {
+          <p class="text-sm text-slate-400">No roles available.</p>
+        } @else {
+          <div class="flex flex-col gap-1.5 rounded-lg border border-slate-300 p-3 dark:border-slate-600">
+            @for (role of availableRoles(); track role.id) {
+              <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  [checked]="isRoleSelected(role.id)"
+                  (change)="toggleRole(role.id)"
+                />
+                {{ role.name }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+
       <div class="mt-2 flex justify-end gap-2">
         <button
           type="button"
@@ -91,6 +116,7 @@ import { UserFormValue } from '../models/user.model';
 })
 export class UserFormComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly roleService = inject(RoleService);
 
   readonly mode = input<'create' | 'edit'>('create');
   readonly initialValue = input<UserFormValue | null>(null);
@@ -106,10 +132,20 @@ export class UserFormComponent {
     email: ['', [Validators.required, Validators.email]],
   });
 
+  protected readonly availableRoles = signal<Role[]>([]);
+  protected readonly rolesLoading = signal(true);
+  private readonly selectedRoleIds = signal<ReadonlySet<string>>(new Set());
+
   constructor() {
+    this.roleService
+      .listAllForDropdown()
+      .then((roles) => this.availableRoles.set(roles))
+      .finally(() => this.rolesLoading.set(false));
+
     effect(() => {
       const value = this.initialValue();
       this.form.reset(value ?? { firstName: '', lastName: '', email: '' });
+      this.selectedRoleIds.set(new Set(value?.roleIds ?? []));
     });
   }
 
@@ -118,11 +154,21 @@ export class UserFormComponent {
     return control.invalid && control.touched;
   }
 
+  protected isRoleSelected(id: string): boolean {
+    return this.selectedRoleIds().has(id);
+  }
+
+  protected toggleRole(id: string): void {
+    const next = new Set(this.selectedRoleIds());
+    next.has(id) ? next.delete(id) : next.add(id);
+    this.selectedRoleIds.set(next);
+  }
+
   protected onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    this.saved.emit(this.form.getRawValue());
+    this.saved.emit({ ...this.form.getRawValue(), roleIds: [...this.selectedRoleIds()] });
   }
 }

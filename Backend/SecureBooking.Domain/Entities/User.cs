@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SecureBooking.Domain.Entities;
 
@@ -12,6 +13,9 @@ public class User : Entity
 
     public string? RefreshTokenHash { get; private set; }
     public DateTime? RefreshTokenExpiry { get; private set; }
+
+    private readonly List<Role> _roles = new();
+    public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
 
     private User() { }
 
@@ -38,5 +42,11 @@ public class User : Entity
     {
         RefreshTokenHash = tokenHash;
         RefreshTokenExpiry = expiry;
+    }
+
+    public void SetRoles(IEnumerable<Role> roles)
+    {
+        _roles.Clear();
+        _roles.AddRange(roles);
     }
 }

@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Authentication;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
@@ -8,6 +9,7 @@ namespace SecureBooking.Application.Features.Users;
 
 public sealed class CreateUserCommandHandler(
     IRepository<User> repository,
+    IApplicationDbContext db,
     IPasswordHasher passwordHasher,
     IUnitOfWork unitOfWork
 ) : IRequestHandler<CreateUserCommand, CreateUserResult>
@@ -21,10 +23,19 @@ public sealed class CreateUserCommandHandler(
         var temporaryPassword = GenerateTemporaryPassword();
         var user = new User(request.FirstName, request.LastName, request.Email, passwordHasher.Hash(temporaryPassword));
 
+        if (request.RoleIds.Count > 0)
+        {
+            var roles = await db.Roles
+                .Where(r => request.RoleIds.Contains(r.Id))
+                .ToListAsync(cancellationToken);
+            user.SetRoles(roles);
+        }
+
         await repository.AddAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var response = new UserResponse(user.Id, user.FirstName, user.LastName, user.Email, user.IsActive, user.CreatedAt);
+        var roleSummaries = user.Roles.Select(r => new RoleSummary(r.Id, r.Name)).ToList();
+        var response = new UserResponse(user.Id, user.FirstName, user.LastName, user.Email, user.IsActive, user.CreatedAt, roleSummaries);
         return new CreateUserResult(response, temporaryPassword);
     }
 

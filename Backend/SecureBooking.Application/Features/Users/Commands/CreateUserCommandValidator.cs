@@ -16,5 +16,11 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
             .MustAsync(async (email, ct) => !await db.Users.AnyAsync(u => u.Email == email.ToLower(), ct))
             .WithMessage("A user with this email already exists.")
             .When(x => !string.IsNullOrWhiteSpace(x.Email));
+
+        RuleFor(x => x.RoleIds)
+            .MustAsync(async (roleIds, ct) =>
+                roleIds.Count == 0 ||
+                (await db.Roles.CountAsync(r => roleIds.Contains(r.Id), ct)) == roleIds.Distinct().Count())
+            .WithMessage("One or more role ids do not exist.");
     }
 }

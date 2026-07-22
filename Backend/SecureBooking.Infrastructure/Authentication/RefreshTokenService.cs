@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Authentication;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Application.Features.Authentication.Commands.Refresh;
@@ -12,9 +14,9 @@ public class RefreshTokenService(
     IRefreshTokenRepository repository,
     IUnitOfWork unitOfWork,
     IRefreshTokenRepository refreshTokenRepository,
-    IUserRepository userRepository,
     IRefreshTokenGenerator refreshTokenGenerator,
-    IJwtTokenGenerator jwtTokenGenerator
+    IJwtTokenGenerator jwtTokenGenerator,
+    IApplicationDbContext db
 
 ) : IRefreshTokenService
 {
@@ -61,9 +63,10 @@ public class RefreshTokenService(
         if (storedToken is null || !storedToken.IsActive)
             throw new UnauthorizedAccessException("Invalid refresh token.");
 
-        var user = await userRepository.GetByIdAsync(
-            storedToken.UserId,
-            cancellationToken);
+        var user = await db.Users
+            .Include(u => u.Roles)
+            .ThenInclude(r => r.Permissions)
+            .FirstOrDefaultAsync(u => u.Id == storedToken.UserId, cancellationToken);
 
         if (user is null || !user.IsActive)
             throw new UnauthorizedAccessException("User not found.");
@@ -83,6 +86,9 @@ public class RefreshTokenService(
             
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var roleNames = user.Roles.Select(r => r.Name).ToList();
+        var permissionCodes = user.Roles.SelectMany(r => r.Permissions).Select(p => p.Code).Distinct().ToList();
+
         return new RefreshTokenResponse(
             accessToken.AccessToken,
             accessToken.AccessTokenExpiresAt,
@@ -91,7 +97,9 @@ public class RefreshTokenService(
             user.Id,
             user.FirstName,
             user.LastName,
-            user.Email);
+            user.Email,
+            roleNames,
+            permissionCodes);
     }
 
      private static string ComputeHash(string token)

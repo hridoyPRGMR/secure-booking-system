@@ -4,13 +4,15 @@
       <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Rooms</h1>
       <p class="text-sm text-slate-500 dark:text-slate-400">Bookable rooms across all hotels.</p>
     </div>
-    <button
-      type="button"
-      class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
-      (click)="openCreate()"
-    >
-      + Add Room
-    </button>
+    @if (authService.hasPermission('Rooms.Create')) {
+      <button
+        type="button"
+        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+        (click)="openCreate()"
+      >
+        + Add Room
+      </button>
+    }
   </div>
 
   <app-grid-filter [fields]="filterFields" (filtersChanged)="onFiltersChanged($event)" />

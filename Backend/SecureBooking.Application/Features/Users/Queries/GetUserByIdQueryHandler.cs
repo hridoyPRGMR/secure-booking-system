@@ -14,7 +14,9 @@ public sealed class GetUserByIdQueryHandler(IApplicationDbContext db)
         var user = await db.Users
             .AsNoTracking()
             .Where(u => u.Id == request.Id)
-            .Select(u => new UserResponse(u.Id, u.FirstName, u.LastName, u.Email, u.IsActive, u.CreatedAt))
+            .Select(u => new UserResponse(
+                u.Id, u.FirstName, u.LastName, u.Email, u.IsActive, u.CreatedAt,
+                u.Roles.Select(r => new RoleSummary(r.Id, r.Name)).ToList()))
             .FirstOrDefaultAsync(cancellationToken);
 
         return user ?? throw new NotFoundException(nameof(User), request.Id);

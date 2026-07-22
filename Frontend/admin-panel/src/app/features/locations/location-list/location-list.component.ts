@@ -1,5 +1,6 @@
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { API_BASE_URL } from '../../../core/config/api.config';
 import { DynamicSliderComponent } from '../../../shared/components/dynamic-slider/dynamic-slider.component';
@@ -25,6 +26,7 @@ const EMPTY_PAGE: PagedResult<Location> = { items: [], page: 1, pageSize: 10, to
 export class LocationListComponent {
   private readonly locationService = inject(LocationService);
   private readonly toast = inject(ToastService);
+  protected readonly authService = inject(AuthService);
 
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
@@ -64,8 +66,13 @@ export class LocationListComponent {
   ];
 
   protected readonly rowActions: RowAction<Location>[] = [
-    { id: 'edit', label: 'Edit' },
-    { id: 'delete', label: 'Delete', variant: 'danger' },
+    { id: 'edit', label: 'Edit', hidden: () => !this.authService.hasPermission('Locations.Update') },
+    {
+      id: 'delete',
+      label: 'Delete',
+      variant: 'danger',
+      hidden: () => !this.authService.hasPermission('Locations.Delete'),
+    },
   ];
 
   protected readonly trackById = (row: Location) => row.id;

@@ -1,5 +1,6 @@
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { API_BASE_URL } from '../../../core/config/api.config';
 import { DynamicSliderComponent } from '../../../shared/components/dynamic-slider/dynamic-slider.component';
@@ -25,6 +26,7 @@ const EMPTY_PAGE: PagedResult<User> = { items: [], page: 1, pageSize: 10, totalC
 export class UserListComponent {
   private readonly userService = inject(UserService);
   private readonly toast = inject(ToastService);
+  protected readonly authService = inject(AuthService);
 
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
@@ -53,6 +55,7 @@ export class UserListComponent {
   protected readonly isLoading = this.usersResource.isLoading;
 
   protected readonly statusCellTpl = viewChild<TemplateRef<CellContext<User>>>('statusCell');
+  protected readonly rolesCellTpl = viewChild<TemplateRef<CellContext<User>>>('rolesCell');
 
   protected readonly filterFields: FilterFieldDef[] = [
     {
@@ -76,6 +79,7 @@ export class UserListComponent {
     },
     { key: 'email', header: 'Email', sortable: true },
     { key: 'isActive', header: 'Status', cellTemplate: this.statusCellTpl() },
+    { key: 'roles', header: 'Roles', cellTemplate: this.rolesCellTpl() },
     {
       key: 'createdAt',
       header: 'Joined',
@@ -85,8 +89,8 @@ export class UserListComponent {
   ]);
 
   protected readonly rowActions: RowAction<User>[] = [
-    { id: 'edit', label: 'Edit' },
-    { id: 'delete', label: 'Delete', variant: 'danger' },
+    { id: 'edit', label: 'Edit', hidden: () => !this.authService.hasPermission('Users.Update') },
+    { id: 'delete', label: 'Delete', variant: 'danger', hidden: () => !this.authService.hasPermission('Users.Delete') },
   ];
 
   protected readonly trackById = (row: User) => row.id;
@@ -102,8 +106,8 @@ export class UserListComponent {
   protected readonly formInitialValue = computed<UserFormValue | null>(() => {
     const user = this.activeUser();
     if (!user) return null;
-    const { firstName, lastName, email } = user;
-    return { firstName, lastName, email };
+    const { firstName, lastName, email, roles } = user;
+    return { firstName, lastName, email, roleIds: roles.map((r) => r.id) };
   });
 
   protected onFiltersChanged(state: FilterState): void {

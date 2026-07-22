@@ -16,4 +16,6 @@ public interface IApplicationDbContext
     DbSet<Booking> Bookings { get; }
     DbSet<Hotel> Hotels { get; }
     DbSet<Location> Locations { get; }
+    DbSet<Role> Roles { get; }
+    DbSet<Permission> Permissions { get; }
 }

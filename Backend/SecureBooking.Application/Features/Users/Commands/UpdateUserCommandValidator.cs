@@ -19,5 +19,11 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
             .WithMessage("A user with this email already exists.")
             .WithName("Email")
             .When(x => !string.IsNullOrWhiteSpace(x.Email));
+
+        RuleFor(x => x.RoleIds)
+            .MustAsync(async (roleIds, ct) =>
+                roleIds.Count == 0 ||
+                (await db.Roles.CountAsync(r => roleIds.Contains(r.Id), ct)) == roleIds.Distinct().Count())
+            .WithMessage("One or more role ids do not exist.");
     }
 }

@@ -50,6 +50,8 @@ public sealed class RegisterCommandHandler(
             user.Id,
             user.FirstName,
             user.LastName,
-            user.Email);
+            user.Email,
+            Array.Empty<string>(),
+            Array.Empty<string>());
     }
 }

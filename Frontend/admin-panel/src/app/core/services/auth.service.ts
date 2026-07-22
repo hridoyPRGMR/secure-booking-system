@@ -10,8 +10,22 @@ export interface AuthActionResult {
   message?: string;
 }
 
-function toUser(source: { userId: string; firstName: string; lastName: string; email: string }): AdminUser {
-  return { id: source.userId, firstName: source.firstName, lastName: source.lastName, email: source.email };
+function toUser(source: {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  roles?: string[];
+  permissions?: string[];
+}): AdminUser {
+  return {
+    id: source.userId,
+    firstName: source.firstName,
+    lastName: source.lastName,
+    email: source.email,
+    roles: source.roles ?? [],
+    permissions: source.permissions ?? [],
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +38,10 @@ export class AuthService {
   readonly user = this._user.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
+
+  hasPermission(code: string): boolean {
+    return this._user()?.permissions.includes(code) ?? false;
+  }
 
   constructor() {
     tokenStore.onUnauthorized(() => this._user.set(null));

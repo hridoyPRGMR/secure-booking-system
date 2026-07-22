@@ -4,13 +4,15 @@
       <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Users</h1>
       <p class="text-sm text-slate-500 dark:text-slate-400">Manage who has access to your workspace.</p>
     </div>
-    <button
-      type="button"
-      class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
-      (click)="openCreate()"
-    >
-      + Add User
-    </button>
+    @if (authService.hasPermission('Users.Create')) {
+      <button
+        type="button"
+        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+        (click)="openCreate()"
+      >
+        + Add User
+      </button>
+    }
   </div>
 
   <app-grid-filter [fields]="filterFields" (filtersChanged)="onFiltersChanged($event)" />
@@ -43,6 +45,20 @@
       <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
       Inactive
     </span>
+  }
+</ng-template>
+
+<ng-template #rolesCell let-row>
+  @if (row.roles.length === 0) {
+    <span class="text-xs text-slate-400">No roles</span>
+  } @else {
+    <div class="flex flex-wrap gap-1">
+      @for (role of row.roles; track role.id) {
+        <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+          {{ role.name }}
+        </span>
+      }
+    </div>
   }
 </ng-template>
 

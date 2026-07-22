@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using SecureBooking.Application.Common.Authentication;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Application.Features.Authentication;
 using SecureBooking.Infrastructure.Authentication;
+using SecureBooking.Infrastructure.Authorization;
 using SecureBooking.Infrastructure.Persistence;
 using SecureBooking.Infrastructure.Persistence.Repositories;
 
@@ -60,6 +62,9 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<IApplicationDbContext>(sp =>
             sp.GetRequiredService<ApplicationDbContext>());
+
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return services;
     }

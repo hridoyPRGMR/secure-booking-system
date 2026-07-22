@@ -60,3 +60,6 @@ nunit-*.xml
 node_modules
 dist
 migrations
+
+.vs
+.vscode

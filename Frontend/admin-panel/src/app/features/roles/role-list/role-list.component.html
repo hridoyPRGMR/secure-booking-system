@@ -1,0 +1,54 @@
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Roles</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Roles and the permissions they grant.</p>
+    </div>
+    @if (authService.hasPermission('Roles.Create')) {
+      <button
+        type="button"
+        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+        (click)="openCreate()"
+      >
+        + Add Role
+      </button>
+    }
+  </div>
+
+  <app-grid-filter [fields]="[]" (filtersChanged)="onFiltersChanged($event)" />
+
+  <app-data-grid
+    [data]="items()"
+    [columns]="columns()"
+    [rowActions]="rowActions"
+    [trackBy]="trackById"
+    [isLoading]="isLoading()"
+    [serverSide]="true"
+    [total]="total()"
+    [(page)]="page"
+    [(pageSize)]="pageSize"
+    [(sortBy)]="sortBy"
+    [(sortOrder)]="sortOrder"
+    emptyMessage="No roles yet."
+    (actionTriggered)="onRowAction($event)"
+  />
+</div>
+
+<ng-template #permissionsCell let-row>
+  <span
+    class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+  >
+    {{ row.permissionCodes.length }} permission{{ row.permissionCodes.length === 1 ? '' : 's' }}
+  </span>
+</ng-template>
+
+<app-dynamic-slider [(isOpen)]="sliderOpen" [title]="drawerTitle()" position="right" size="md">
+  <app-role-form
+    [mode]="mode()"
+    [initialValue]="formInitialValue()"
+    [submitting]="submitting()"
+    [serverError]="formError()"
+    (saved)="onFormSaved($event)"
+    (cancelled)="sliderOpen.set(false)"
+  />
+</app-dynamic-slider>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
@@ -16,6 +17,8 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
     public DbSet<Hotel> Hotels { get; set; } = null!;
     public DbSet<Location> Locations { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<Role> Roles { get; set; } = null!;
+    public DbSet<Permission> Permissions { get; set; } = null!;
 
     Task<int>IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
@@ -83,6 +86,59 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Permission>(b =>
+        {
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Code).IsRequired().HasMaxLength(100);
+            b.Property(p => p.Area).IsRequired().HasMaxLength(100);
+            b.Property(p => p.Action).IsRequired().HasMaxLength(100);
+            b.Property(p => p.Description).IsRequired().HasMaxLength(500);
+
+            b.HasIndex(p => p.Code).IsUnique();
+        });
+
+        modelBuilder.Entity<Role>(b =>
+        {
+            b.HasKey(r => r.Id);
+            b.Property(r => r.Name).IsRequired().HasMaxLength(100);
+            b.Property(r => r.Description).HasMaxLength(500);
+
+            b.HasIndex(r => r.Name).IsUnique();
+
+            b.Metadata.FindNavigation(nameof(Role.Permissions))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            b.HasMany(r => r.Permissions)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermissions",
+                    j => j.HasOne<Permission>().WithMany().HasForeignKey("PermissionId").OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId").OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                    {
+                        j.HasKey("RoleId", "PermissionId");
+                        j.ToTable("RolePermissions");
+                    });
+        });
+
+        modelBuilder.Entity<User>(b =>
+        {
+            b.Metadata.FindNavigation(nameof(User.Roles))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            b.HasMany(u => u.Roles)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserRoles",
+                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId").OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId").OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                    {
+                        j.HasKey("UserId", "RoleId");
+                        j.ToTable("UserRoles");
+                    });
         });
     }
 }

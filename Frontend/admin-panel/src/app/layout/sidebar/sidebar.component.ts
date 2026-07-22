@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { NavItem } from '../nav-item.model';
 
 @Component({
@@ -22,8 +23,8 @@ import { NavItem } from '../nav-item.model';
       </div>
 
       <nav class="flex-1 space-y-1 overflow-y-auto px-2 py-4">
-        @for (item of items(); track item.label) {
-          @if (item.children?.length) {
+        @for (item of visibleItems(); track item.label) {
+          @if (visibleChildren(item).length) {
             <div>
               <button
                 type="button"
@@ -39,7 +40,7 @@ import { NavItem } from '../nav-item.model';
 
               @if (isGroupOpen(item.label) && !collapsed()) {
                 <div class="ml-6 mt-1 space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700">
-                  @for (child of item.children; track child.label) {
+                  @for (child of visibleChildren(item); track child.label) {
                     <a
                       [routerLink]="child.route"
                       routerLinkActive="text-indigo-600 font-semibold bg-indigo-50 dark:bg-indigo-500/10"
@@ -69,10 +70,24 @@ import { NavItem } from '../nav-item.model';
   `,
 })
 export class SidebarComponent {
+  private readonly authService = inject(AuthService);
+
   readonly items = input<NavItem[]>([]);
   readonly collapsed = input<boolean>(false);
 
   private readonly openGroups = signal<ReadonlySet<string>>(new Set());
+
+  private canSee(item: NavItem): boolean {
+    return !item.permission || this.authService.hasPermission(item.permission);
+  }
+
+  protected readonly visibleItems = computed(() =>
+    this.items().filter((item) => (item.children?.length ? this.visibleChildren(item).length > 0 : this.canSee(item)))
+  );
+
+  protected visibleChildren(item: NavItem): NavItem[] {
+    return (item.children ?? []).filter((child) => this.canSee(child));
+  }
 
   protected isGroupOpen(label: string): boolean {
     return this.openGroups().has(label);
