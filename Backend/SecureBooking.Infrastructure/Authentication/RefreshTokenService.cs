@@ -24,6 +24,9 @@ public class RefreshTokenService(
     {
         var result = generator.Generate();
 
+        Console.WriteLine($"RAW TOKEN : {result.Token}");
+        Console.WriteLine($"TOKEN HASH: {result.TokenHash}");
+
         var entity = new RefreshToken(
             user.Id,
             result.TokenHash,
@@ -54,7 +57,11 @@ public class RefreshTokenService(
 
     public async Task<RefreshTokenResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"COOKIE TOKEN : {refreshToken}");
+
         var tokenHash = ComputeHash(refreshToken);
+
+        Console.WriteLine($"COOKIE HASH  : {tokenHash}");
 
         var storedToken = await refreshTokenRepository.GetByHashAsync(
             tokenHash,
@@ -83,7 +90,7 @@ public class RefreshTokenService(
                 newRefreshToken.ExpiresAt
             ),
             cancellationToken);
-            
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var roleNames = user.Roles.Select(r => r.Name).ToList();
@@ -102,7 +109,7 @@ public class RefreshTokenService(
             permissionCodes);
     }
 
-     private static string ComputeHash(string token)
+    private static string ComputeHash(string token)
     {
         return Convert.ToHexString(
             SHA256.HashData(

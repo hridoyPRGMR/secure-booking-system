@@ -48,7 +48,7 @@ public class RoomsController(IMediator mediator) : ControllerBase
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = Policies.RoomsUpdate)]
-    public async Task<IActionResult> Update(Guid id, UpdateRoomCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, Command command, CancellationToken cancellationToken)
     {
         if (id != command.Id) return BadRequest("Route id does not match payload id.");
         var result = await mediator.Send(command, cancellationToken);
@@ -59,7 +59,7 @@ public class RoomsController(IMediator mediator) : ControllerBase
     [Authorize(Policy = Policies.RoomsDelete)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await mediator.Send(new DeleteRoomCommand(id), cancellationToken);
+        await mediator.Send(new Delete(id), cancellationToken);
         return NoContent();
     }
 }

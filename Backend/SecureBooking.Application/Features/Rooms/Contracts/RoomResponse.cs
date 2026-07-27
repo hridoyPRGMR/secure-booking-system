@@ -1,6 +1,6 @@
 using SecureBooking.Shared.Enums;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Contracts;
 
 public sealed record RoomResponse(
     Guid Id,

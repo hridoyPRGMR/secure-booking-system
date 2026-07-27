@@ -1,10 +1,11 @@
 using MediatR;
 using SecureBooking.Application.Common.Models;
+using SecureBooking.Application.Features.Rooms.Contracts;
 using SecureBooking.Shared.Enums;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Queries.List;
 
-public sealed record ListRoomsQuery(
+public sealed record Query(
     int Page = 1,
     int PageSize = 10,
     string? Search = null,

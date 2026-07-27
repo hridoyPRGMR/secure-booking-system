@@ -6,8 +6,9 @@ import RoomFilters, { type RoomFilterState } from "../components/room/RoomFilter
 import Pagination from "../components/common/Pagination";
 import type { Room } from "../types/Room";
 import type { CreateBookingRequest } from "../types/Booking";
-import { mockRooms } from "../data/mockRooms";
 import { mockHotels } from "../data/mockHotels";
+import { useQuery } from "@tanstack/react-query";
+import { roomApi } from "../api/roomApi";
 
 const PAGE_SIZE = 6;
 
@@ -22,7 +23,6 @@ const DEFAULT_FILTERS: RoomFilterState = {
 };
 
 export default function Rooms() {
-  const [rooms] = useState<Room[]>(mockRooms);
   const [filters, setFilters] = useState<RoomFilterState>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -50,27 +50,6 @@ export default function Rooms() {
     []
   );
 
-  const filteredRooms = useMemo(() => {
-    return rooms.filter((room) => {
-      if (filters.search && !room.name.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-      if (filters.type !== "All" && room.type !== filters.type) return false;
-      if (filters.city !== "All" && room.hotel?.location?.city !== filters.city) return false;
-      if (filters.hotelId !== "All" && room.hotelId !== filters.hotelId) return false;
-      if (filters.minCapacity !== "" && room.capacity < filters.minCapacity) return false;
-      if (filters.maxPrice !== "" && room.pricePerNight > filters.maxPrice) return false;
-      if (filters.onlyAvailable && !room.isActive) return false;
-      return true;
-    });
-  }, [rooms, filters]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRooms.length / PAGE_SIZE));
-
-  const paginatedRooms = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredRooms.slice(start, start + PAGE_SIZE);
-  }, [filteredRooms, currentPage]);
 
   async function handleBookingSubmit(data: CreateBookingRequest) {
     setIsBooking(true);
@@ -95,6 +74,40 @@ export default function Rooms() {
     filters.onlyAvailable,
   ].filter(Boolean).length;
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["rooms", filters, currentPage],
+    queryFn: () =>
+      roomApi.getRooms({
+        page: currentPage,
+        pageSize: PAGE_SIZE,
+        search: filters.search || undefined,
+        hotelId: filters.hotelId === "All" ? undefined : filters.hotelId,
+        city: filters.city === "All" ? undefined : filters.city,
+        type: filters.type === "All" ? undefined : filters.type,
+        minCapacity: filters.minCapacity || undefined,
+        maxPrice: filters.maxPrice || undefined,
+        onlyAvailable: filters.onlyAvailable,
+      }),
+  });
+
+  const rooms = data?.items ?? [];
+  const totalPages = Math.max(
+    1,
+    Math.ceil((data?.totalCount ?? 0) / PAGE_SIZE)
+  );
+
+  if (isLoading) {
+    return <div>Loading rooms...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-300 bg-red-50 p-4">
+        Failed to load rooms.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       {/* Desktop sidebar */}
@@ -114,7 +127,7 @@ export default function Rooms() {
       <div className="min-w-0 flex-1 space-y-6">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {filteredRooms.length} room{filteredRooms.length !== 1 ? "s" : ""} found
+            {data?.totalCount ?? 0} room{(data?.totalCount ?? 0) !== 1 ? "s" : ""} found
           </p>
 
           <button
@@ -132,7 +145,11 @@ export default function Rooms() {
           </button>
         </div>
 
-        <RoomGrid rooms={paginatedRooms} onView={(room) => console.log(room)} onBook={setSelectedRoom} />
+        <RoomGrid
+          rooms={rooms}
+          onView={(room) => console.log(room)}
+          onBook={setSelectedRoom}
+        />
 
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
@@ -170,7 +187,7 @@ export default function Rooms() {
               onClick={() => setMobileFiltersOpen(false)}
               className="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
             >
-              Show {filteredRooms.length} results
+              Show {data?.totalCount ?? 0} results
             </button>
           </div>
         </div>

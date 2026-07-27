@@ -4,15 +4,15 @@ using SecureBooking.Application.Common.Exceptions;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Commands.Delete;
 
 public sealed class DeleteRoomCommandHandler(
     IRepository<Room> repository,
     IApplicationDbContext db,
     IUnitOfWork unitOfWork
-) : IRequestHandler<DeleteRoomCommand, Unit>
+) : IRequestHandler<Delete, Unit>
 {
-    public async Task<Unit> Handle(DeleteRoomCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(Delete request, CancellationToken cancellationToken)
     {
         var room = await repository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Room), request.Id);

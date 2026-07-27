@@ -2,13 +2,14 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Models;
 using SecureBooking.Application.Common.Repositories;
+using SecureBooking.Application.Features.Rooms.Contracts;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Queries.List;
 
-public sealed class ListRoomsQueryHandler(IApplicationDbContext db)
-    : IRequestHandler<ListRoomsQuery, PagedResult<RoomResponse>>
+public sealed class Handler(IApplicationDbContext db)
+    : IRequestHandler<Query, PagedResult<RoomResponse>>
 {
-    public async Task<PagedResult<RoomResponse>> Handle(ListRoomsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<RoomResponse>> Handle(Query request, CancellationToken cancellationToken)
     {
         var query = db.Rooms.AsNoTracking().AsQueryable();
 

@@ -1,10 +1,9 @@
 using MediatR;
 using SecureBooking.Shared.Enums;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Commands.Create;
 
-public sealed record UpdateRoomCommand(
-    Guid Id,
+public sealed record Command(
     string Name,
     RoomType Type,
     string? Description,

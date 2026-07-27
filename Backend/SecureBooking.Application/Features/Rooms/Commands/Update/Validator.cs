@@ -2,12 +2,13 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Repositories;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Commands.Update;
 
-public sealed class CreateRoomCommandValidator : AbstractValidator<CreateRoomCommand>
+public sealed class Validator : AbstractValidator<Command>
 {
-    public CreateRoomCommandValidator(IApplicationDbContext db)
+    public Validator(IApplicationDbContext db)
     {
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Type).IsInEnum();
         RuleFor(x => x.Capacity).GreaterThan(0);

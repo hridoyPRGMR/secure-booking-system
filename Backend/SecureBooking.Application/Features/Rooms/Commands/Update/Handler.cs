@@ -4,15 +4,15 @@ using SecureBooking.Application.Common.Exceptions;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Commands.Update;
 
-public sealed class UpdateRoomCommandHandler(
+public sealed class Handler(
     IRepository<Room> repository,
     IApplicationDbContext db,
     IUnitOfWork unitOfWork
-) : IRequestHandler<UpdateRoomCommand, RoomResponse>
+) : IRequestHandler<Command, RoomResponse>
 {
-    public async Task<RoomResponse> Handle(UpdateRoomCommand request, CancellationToken cancellationToken)
+    public async Task<RoomResponse> Handle(Command request, CancellationToken cancellationToken)
     {
         var room = await repository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Room), request.Id);

@@ -2,15 +2,15 @@ using MediatR;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
-namespace SecureBooking.Application.Features.Rooms;
+namespace SecureBooking.Application.Features.Rooms.Commands.Create;
 
-public sealed class CreateRoomCommandHandler(
+public sealed class Handler(
     IRepository<Room> repository,
     IApplicationDbContext db,
     IUnitOfWork unitOfWork
-) : IRequestHandler<CreateRoomCommand, RoomResponse>
+) : IRequestHandler<Command, RoomResponse>
 {
-    public async Task<RoomResponse> Handle(CreateRoomCommand request, CancellationToken cancellationToken)
+    public async Task<RoomResponse> Handle(Command request, CancellationToken cancellationToken)
     {
         var room = new Room
         {
