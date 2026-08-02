@@ -2,7 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecureBooking.Application.Common.Security;
-using SecureBooking.Application.Features.Rooms;
+using SecureBooking.Application.Features.Rooms.Commands;
+using SecureBooking.Application.Features.Rooms.Queries;
 using SecureBooking.Shared.Enums;
 
 namespace SecureBooking.Api.Controllers;
@@ -48,7 +49,7 @@ public class RoomsController(IMediator mediator) : ControllerBase
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = Policies.RoomsUpdate)]
-    public async Task<IActionResult> Update(Guid id, Command command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, UpdateRoomCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Id) return BadRequest("Route id does not match payload id.");
         var result = await mediator.Send(command, cancellationToken);
@@ -59,7 +60,7 @@ public class RoomsController(IMediator mediator) : ControllerBase
     [Authorize(Policy = Policies.RoomsDelete)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await mediator.Send(new Delete(id), cancellationToken);
+        await mediator.Send(new DeleteRoomCommand(id), cancellationToken);
         return NoContent();
     }
 }

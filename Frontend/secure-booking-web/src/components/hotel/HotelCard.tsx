@@ -42,12 +42,10 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
           </div>
         </div>
 
-        {hotel.location && (
-          <p className="mt-1 flex items-center gap-1 text-sm text-gray-500">
-            <MapPin size={14} />
-            {hotel.location.city}, {hotel.location.country}
-          </p>
-        )}
+        <p className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+          <MapPin size={14} />
+          {hotel.locationCity}, {hotel.locationCountry}
+        </p>
 
         <p className="mt-3 line-clamp-2 text-sm text-gray-600">
           {hotel.description || "No description available."}

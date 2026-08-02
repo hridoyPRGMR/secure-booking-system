@@ -1,5 +1,3 @@
-import { Hotel } from "./Hotel";
-
 export enum RoomType {
   Standard = "Standard",
   Deluxe = "Deluxe",
@@ -17,6 +15,7 @@ export interface Room {
   imageUrl?: string;
   isActive: boolean;
   hotelId: string;
-  hotel?: Hotel;
+  hotelName: string;
+  bookingCount: number;
+  createdAt: string;
 }
-

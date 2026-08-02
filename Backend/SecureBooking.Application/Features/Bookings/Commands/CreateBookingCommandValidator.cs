@@ -35,6 +35,11 @@ public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBook
     internal static async Task<bool> HasOverlapAsync(
         IApplicationDbContext db, Guid roomId, DateTime checkIn, DateTime checkOut, Guid? excludeBookingId, CancellationToken ct)
     {
+        // Npgsql requires UTC Kind for timestamptz columns; date-only input from clients
+        // (e.g. an HTML date picker) arrives with Kind=Unspecified.
+        checkIn = DateTime.SpecifyKind(checkIn, DateTimeKind.Utc);
+        checkOut = DateTime.SpecifyKind(checkOut, DateTimeKind.Utc);
+
         return await db.Bookings.AnyAsync(b =>
             b.RoomId == roomId &&
             b.Status != Shared.Enums.BookingStatus.Cancelled &&

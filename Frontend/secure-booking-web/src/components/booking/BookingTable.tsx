@@ -50,8 +50,8 @@ export default function BookingTable({
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Guest</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Room</th>
+            <th className="px-4 py-3 text-left font-medium text-gray-500">Hotel</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Check-in</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Check-out</th>
             <th className="px-4 py-3 text-left font-medium text-gray-500">Status</th>
@@ -68,18 +68,13 @@ export default function BookingTable({
 
             return (
               <tr key={booking.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-gray-900">{booking.guestName}</p>
-                  <p className="text-xs text-gray-500">{booking.guestEmail}</p>
+                <td className="px-4 py-3 text-gray-700">{booking.roomName}</td>
+                <td className="px-4 py-3 text-gray-700">{booking.hotelName}</td>
+                <td className="px-4 py-3 text-gray-700">
+                  {dateFormatter.format(new Date(booking.checkIn))}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
-                  {booking.room?.name ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-gray-700">
-                  {dateFormatter.format(new Date(booking.checkInDate))}
-                </td>
-                <td className="px-4 py-3 text-gray-700">
-                  {dateFormatter.format(new Date(booking.checkOutDate))}
+                  {dateFormatter.format(new Date(booking.checkOut))}
                 </td>
                 <td className="px-4 py-3">
                   <span

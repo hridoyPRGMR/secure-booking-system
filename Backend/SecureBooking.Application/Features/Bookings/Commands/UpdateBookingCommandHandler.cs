@@ -18,8 +18,8 @@ public sealed class UpdateBookingCommandHandler(
 
         booking.UserId = request.UserId;
         booking.RoomId = request.RoomId;
-        booking.CheckIn = request.CheckIn;
-        booking.CheckOut = request.CheckOut;
+        booking.CheckIn = DateTime.SpecifyKind(request.CheckIn, DateTimeKind.Utc);
+        booking.CheckOut = DateTime.SpecifyKind(request.CheckOut, DateTimeKind.Utc);
         booking.Status = request.Status;
         booking.Notes = request.Notes;
 

@@ -62,4 +62,32 @@ public class BookingsController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteBookingCommand(id), cancellationToken);
         return NoContent();
     }
+
+    // Self-service actions below: any authenticated user manages their own bookings —
+    // no permission policy required, unlike the admin CRUD actions above.
+
+    [HttpGet("mine")]
+    public async Task<IActionResult> ListMine(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] BookingStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await mediator.Send(new MyBookingsQuery(page, pageSize, status), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("mine")]
+    public async Task<IActionResult> CreateMine(CreateMyBookingCommand command, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPost("mine/{id:guid}/cancel")]
+    public async Task<IActionResult> CancelMine(Guid id, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new CancelMyBookingCommand(id), cancellationToken);
+        return NoContent();
+    }
 }

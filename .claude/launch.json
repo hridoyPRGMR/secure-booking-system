@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend-api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Backend/SecureBooking.Api", "--launch-profile", "https"],
+      "port": 7013,
+      "url": "https://localhost:7013"
+    },
+    {
+      "name": "secure-booking-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "Frontend/secure-booking-web"],
+      "port": 5173
+    }
+  ]
+}

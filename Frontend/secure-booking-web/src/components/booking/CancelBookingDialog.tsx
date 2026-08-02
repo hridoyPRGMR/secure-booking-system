@@ -31,9 +31,9 @@ export default function CancelBookingDialog({
         <h2 className="text-lg font-semibold">Cancel booking?</h2>
         <p className="mt-2 text-sm text-gray-600">
           This will cancel the booking for{" "}
-          <span className="font-medium">{booking.room?.name ?? "this room"}</span> from{" "}
-          {new Date(booking.checkInDate).toLocaleDateString()} to{" "}
-          {new Date(booking.checkOutDate).toLocaleDateString()}. This can't be undone.
+          <span className="font-medium">{booking.roomName}</span> from{" "}
+          {new Date(booking.checkIn).toLocaleDateString()} to{" "}
+          {new Date(booking.checkOut).toLocaleDateString()}. This can't be undone.
         </p>
 
         {error && (

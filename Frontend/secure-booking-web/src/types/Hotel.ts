@@ -1,5 +1,3 @@
-import type { Location } from "./Location";
-
 export interface Hotel {
   id: string;
   name: string;
@@ -8,5 +6,8 @@ export interface Hotel {
   imageUrl?: string;
   isActive: boolean;
   locationId: string;
-  location?: Location;
+  locationCity: string;
+  locationCountry: string;
+  roomCount: number;
+  createdAt: string;
 }

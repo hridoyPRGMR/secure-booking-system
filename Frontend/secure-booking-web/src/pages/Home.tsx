@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarCheck, DoorOpen, ListChecks, Building2 } from "lucide-react";
-import type { Room } from "../types/Room";
-import type { Booking } from "../types/Booking";
 import { BookingStatus } from "../types/Booking";
-import { mockRooms } from "../data/mockRooms";
-import { mockBookings } from "../data/mockBookings";
+import { roomApi } from "../api/roomApi";
+import { bookingApi } from "../api/bookingApi";
 import BookingCard from "../components/booking/BookingCard";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+import { useAuth } from "../hooks/useAuth";
 
 function isToday(dateString: string): boolean {
   const date = new Date(dateString);
@@ -21,48 +19,31 @@ function isToday(dateString: string): boolean {
 }
 
 export default function Home() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const {
+    data: roomsData,
+    isLoading: roomsLoading,
+    error: roomsError,
+  } = useQuery({
+    queryKey: ["rooms", "dashboard"],
+    queryFn: () => roomApi.getRooms({ page: 1, pageSize: 100 }),
+  });
 
-    async function fetchDashboardData() {
-      setIsLoading(true);
-      setError(null);
+  const {
+    data: bookingsData,
+    isLoading: bookingsLoading,
+    error: bookingsError,
+  } = useQuery({
+    queryKey: ["bookings", "mine", "dashboard"],
+    queryFn: () => bookingApi.getMyBookings({ page: 1, pageSize: 100 }),
+    enabled: isAuthenticated,
+  });
 
-      try {
-        const [roomsRes, bookingsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/rooms`, { signal: controller.signal }),
-          fetch(`${API_BASE_URL}/api/bookings/mine`, {
-            signal: controller.signal,
-            credentials: "include",
-          }),
-        ]);
-
-        if (!roomsRes.ok || !bookingsRes.ok) {
-          throw new Error("Failed to load dashboard data.");
-        }
-
-        setRooms(await roomsRes.json());
-        setBookings(await bookingsRes.json());
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        // Fallback to mock data so the dashboard still renders during development.
-        setRooms(mockRooms);
-        setBookings(mockBookings);
-        setError(null);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchDashboardData();
-
-    return () => controller.abort();
-  }, []);
+  const rooms = roomsData?.items ?? [];
+  const bookings = bookingsData?.items ?? [];
+  const isLoading = roomsLoading || (isAuthenticated && bookingsLoading);
+  const error = roomsError || (isAuthenticated && bookingsError) ? "Failed to load dashboard data." : null;
 
   const stats = useMemo(() => {
     const totalRooms = rooms.length;
@@ -71,7 +52,7 @@ export default function Home() {
     const todaysBookings = bookings.filter(
       (b) =>
         b.status !== BookingStatus.Cancelled &&
-        (isToday(b.checkInDate) || isToday(b.checkOutDate))
+        (isToday(b.checkIn) || isToday(b.checkOut))
     ).length;
 
     return { totalRooms, availableRooms, myBookings, todaysBookings };
@@ -80,7 +61,7 @@ export default function Home() {
   const upcomingBookings = useMemo(() => {
     return bookings
       .filter((b) => b.status === BookingStatus.Pending || b.status === BookingStatus.Confirmed)
-      .sort((a, b) => new Date(a.checkInDate).getTime() - new Date(b.checkInDate).getTime())
+      .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime())
       .slice(0, 3);
   }, [bookings]);
 
@@ -134,7 +115,7 @@ export default function Home() {
       <div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Upcoming bookings</h2>
-          <Link to="/my-bookings" className="text-sm font-medium text-indigo-600 hover:underline">
+          <Link to="/bookings" className="text-sm font-medium text-indigo-600 hover:underline">
             View all
           </Link>
         </div>

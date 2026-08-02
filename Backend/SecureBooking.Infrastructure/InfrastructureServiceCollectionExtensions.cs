@@ -48,6 +48,9 @@ public static class InfrastructureServiceCollectionExtensions
                 };
             });
         
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
         services.AddScoped<IPasswordHasher,PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator,JwtTokenGenerator>();
         services.AddScoped<IRefreshTokenGenerator,RefreshTokenGenerator>();

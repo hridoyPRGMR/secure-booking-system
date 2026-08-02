@@ -32,7 +32,7 @@ function nightsBetween(checkIn: string, checkOut: string): number {
 }
 
 export default function BookingCard({ booking, onView, onCancel }: BookingCardProps) {
-  const nights = nightsBetween(booking.checkInDate, booking.checkOutDate);
+  const nights = nightsBetween(booking.checkIn, booking.checkOut);
   const canCancel =
     booking.status !== BookingStatus.Cancelled &&
     booking.status !== BookingStatus.CheckedOut;
@@ -41,10 +41,8 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
     <div className="rounded-xl border bg-white p-5 shadow-sm transition hover:shadow-lg">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="text-lg font-semibold">{booking.guestName}</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {booking.room?.name ?? "Room details unavailable"}
-          </p>
+          <h3 className="text-lg font-semibold">{booking.roomName}</h3>
+          <p className="mt-1 text-sm text-gray-500">{booking.hotelName}</p>
         </div>
 
         <span
@@ -57,15 +55,11 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
           <p className="text-gray-500">Check-in</p>
-          <p className="font-medium">{dateFormatter.format(new Date(booking.checkInDate))}</p>
+          <p className="font-medium">{dateFormatter.format(new Date(booking.checkIn))}</p>
         </div>
         <div>
           <p className="text-gray-500">Check-out</p>
-          <p className="font-medium">{dateFormatter.format(new Date(booking.checkOutDate))}</p>
-        </div>
-        <div>
-          <p className="text-gray-500">Guests</p>
-          <p className="font-medium">{booking.numberOfGuests}</p>
+          <p className="font-medium">{dateFormatter.format(new Date(booking.checkOut))}</p>
         </div>
         <div>
           <p className="text-gray-500">Nights</p>

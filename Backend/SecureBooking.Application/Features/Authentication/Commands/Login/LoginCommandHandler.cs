@@ -6,7 +6,7 @@ using SecureBooking.Application.Common.Repositories;
 
 namespace SecureBooking.Application.Features.Authentication.Commands.Login;
 
-public sealed class LoginCommandHnadler(
+public sealed class LoginCommandHandler(
     IApplicationDbContext db,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator tokenGenerator,
@@ -24,9 +24,8 @@ public sealed class LoginCommandHnadler(
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken)
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
-         if (!passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (!passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Invalid email or password.");
-
 
         var accessToken = tokenGenerator.Generate(user);
         var refreshToken = await refreshTokenService.CreateAsync(user,cancellationToken);

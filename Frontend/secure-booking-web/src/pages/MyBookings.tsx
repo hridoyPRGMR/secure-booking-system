@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Booking } from "../types/Booking";
 import { BookingStatus } from "../types/Booking";
 import BookingCard from "../components/booking/BookingCard";
 import BookingTable from "../components/booking/BookingTable";
 import CancelBookingDialog from "../components/booking/CancelBookingDialog";
-import { mockBookings } from "../data/mockBookings";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+import { bookingApi } from "../api/bookingApi";
 
 type StatusFilter = "All" | BookingStatus;
 type ViewMode = "grid" | "table";
@@ -21,9 +20,7 @@ const FILTER_TABS: StatusFilter[] = [
 ];
 
 export default function MyBookings() {
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -32,39 +29,12 @@ export default function MyBookings() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
 
-//   useEffect(() => {
-//     const controller = new AbortController();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["bookings", "mine", "list"],
+    queryFn: () => bookingApi.getMyBookings({ page: 1, pageSize: 100 }),
+  });
 
-//     async function fetchBookings() {
-//       setIsLoading(true);
-//       setError(null);
-
-//       try {
-//         // NOTE: assumes an auth cookie/token identifies the current guest server-side.
-//         // If bookings aren't scoped by auth yet, add a query param, e.g. `?guestEmail=...`.
-//         const response = await fetch(`${API_BASE_URL}/api/bookings/mine`, {
-//           signal: controller.signal,
-//           credentials: "include",
-//         });
-
-//         if (!response.ok) {
-//           throw new Error(`Request failed with status ${response.status}`);
-//         }
-
-//         const data: Booking[] = await response.json();
-//         setBookings(data);
-//       } catch (err) {
-//         if (err instanceof DOMException && err.name === "AbortError") return;
-//         setError("Couldn't load your bookings. Please try again.");
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     }
-
-//     fetchBookings();
-
-//     return () => controller.abort();
-//   }, []);
+  const bookings = data?.items ?? [];
 
   const filteredBookings = useMemo(() => {
     if (statusFilter === "All") return bookings;
@@ -76,21 +46,8 @@ export default function MyBookings() {
     setCancelError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/${booking.id}/cancel`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `Request failed with status ${response.status}`);
-      }
-
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === booking.id ? { ...b, status: BookingStatus.Cancelled } : b
-        )
-      );
+      await bookingApi.cancelMyBooking(booking.id);
+      await queryClient.invalidateQueries({ queryKey: ["bookings", "mine"] });
       setBookingToCancel(null);
     } catch (err) {
       setCancelError(
@@ -153,7 +110,9 @@ export default function MyBookings() {
       <div className="mt-6">
         {isLoading && <p className="text-sm text-gray-500">Loading your bookings…</p>}
 
-        {!isLoading && error && <p className="text-sm text-red-600">{error}</p>}
+        {!isLoading && error && (
+          <p className="text-sm text-red-600">Couldn't load your bookings. Please try again.</p>
+        )}
 
         {!isLoading && !error && filteredBookings.length === 0 && (
           <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">

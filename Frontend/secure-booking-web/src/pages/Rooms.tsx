@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { SlidersHorizontal, X } from "lucide-react";
 import RoomGrid from "../components/room/RoomGrid";
 import BookRoomModal from "../components/room/BookRoomModal";
@@ -6,9 +7,10 @@ import RoomFilters, { type RoomFilterState } from "../components/room/RoomFilter
 import Pagination from "../components/common/Pagination";
 import type { Room } from "../types/Room";
 import type { CreateBookingRequest } from "../types/Booking";
-import { mockHotels } from "../data/mockHotels";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { roomApi } from "../api/roomApi";
+import { hotelApi } from "../api/hotelApi";
+import { bookingApi } from "../api/bookingApi";
 
 const PAGE_SIZE = 6;
 
@@ -23,6 +25,7 @@ const DEFAULT_FILTERS: RoomFilterState = {
 };
 
 export default function Rooms() {
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<RoomFilterState>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -35,30 +38,42 @@ export default function Rooms() {
     setCurrentPage(1);
   }, [filters]);
 
+  const { data: hotelsData } = useQuery({
+    queryKey: ["hotels", "all"],
+    queryFn: () => hotelApi.getHotels({ page: 1, pageSize: 100 }),
+  });
+  const hotels = hotelsData?.items ?? [];
+
   const cities = useMemo(
-    () => Array.from(new Set(mockHotels.map((h) => h.location?.city).filter(Boolean))) as string[],
-    []
+    () => Array.from(new Set(hotels.map((h) => h.locationCity).filter(Boolean))),
+    [hotels]
   );
 
   const hotelOptions = useMemo(
     () =>
-      mockHotels.map((h) => ({
+      hotels.map((h) => ({
         id: h.id,
         name: h.name,
-        city: h.location?.city ?? "",
+        city: h.locationCity,
       })),
-    []
+    [hotels]
   );
-
 
   async function handleBookingSubmit(data: CreateBookingRequest) {
     setIsBooking(true);
     setBookingError(null);
     try {
-      // POST to /api/bookings — same as before
+      await bookingApi.createMyBooking(data);
+      await queryClient.invalidateQueries({ queryKey: ["rooms"] });
       setSelectedRoom(null);
     } catch (err) {
-      setBookingError(err instanceof Error ? err.message : "Couldn't create the booking.");
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const problem = err.response.data as { detail?: string; errors?: Record<string, string[]> };
+        const firstFieldError = problem.errors && Object.values(problem.errors)[0]?.[0];
+        setBookingError(firstFieldError ?? problem.detail ?? "Couldn't create the booking.");
+      } else {
+        setBookingError(err instanceof Error ? err.message : "Couldn't create the booking.");
+      }
     } finally {
       setIsBooking(false);
     }

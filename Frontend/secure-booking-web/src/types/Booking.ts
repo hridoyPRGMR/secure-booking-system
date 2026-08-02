@@ -1,5 +1,3 @@
-import type { Room } from "./Room";
-
 export enum BookingStatus {
   Pending = "Pending",
   Confirmed = "Confirmed",
@@ -10,27 +8,23 @@ export enum BookingStatus {
 
 export interface Booking {
   id: string;
+  userId: string;
+  userFullName: string;
+  userEmail: string;
   roomId: string;
-  room?: Room; // populated when the API includes the related room
-  guestName: string;
-  guestEmail: string;
-  guestPhone?: string;
-  checkInDate: string; // ISO date string
-  checkOutDate: string; // ISO date string
-  numberOfGuests: number;
+  roomName: string;
+  hotelName: string;
+  checkIn: string; // ISO date string
+  checkOut: string; // ISO date string
   status: BookingStatus;
-  totalPrice: number;
   notes?: string;
+  totalPrice: number;
   createdAt: string;
 }
 
 export interface CreateBookingRequest {
   roomId: string;
-  guestName: string;
-  guestEmail: string;
-  guestPhone?: string;
-  checkInDate: string;
-  checkOutDate: string;
-  numberOfGuests: number;
+  checkIn: string;
+  checkOut: string;
   notes?: string;
 }

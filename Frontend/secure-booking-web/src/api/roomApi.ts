@@ -16,7 +16,7 @@ export interface GetRoomsRequest {
 
 class RoomApi {
   async getRooms(request: GetRoomsRequest): Promise<PagedResult<Room>> {
-    const { data } = await apiClient.get<PagedResult<Room>>("/rooms", {
+    const { data } = await apiClient.get<PagedResult<Room>>("/public/rooms", {
       params: request,
     });
 
@@ -24,7 +24,7 @@ class RoomApi {
   }
 
   async getRoom(id: string): Promise<Room> {
-    const { data } = await apiClient.get<Room>(`/rooms/${id}`);
+    const { data } = await apiClient.get<Room>(`/public/rooms/${id}`);
     return data;
   }
 }

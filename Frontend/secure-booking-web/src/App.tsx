@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Home from "./pages/Home";
 import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/room/RoomDetails";
+import Hotels from "./components/hotel/Hotels";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/rooms", element: <Rooms /> },
       { path: "/rooms/:id", element: <RoomDetails /> },
+      { path: "/hotels", element: <Hotels /> },
 
       {
         element: <ProtectedRoute />,

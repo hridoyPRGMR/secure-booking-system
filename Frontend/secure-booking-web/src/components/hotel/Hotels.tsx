@@ -1,24 +1,26 @@
 import { useMemo, useState } from "react";
-import { mockHotels } from "../../data/mockHotels";
-import { mockRooms } from "../../data/mockRooms";
+import { useQuery } from "@tanstack/react-query";
+import { hotelApi } from "../../api/hotelApi";
 import HotelCard from "./HotelCard";
-
 
 export default function Hotels() {
   const [search, setSearch] = useState("");
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["hotels", "list"],
+    queryFn: () => hotelApi.getHotels({ page: 1, pageSize: 100 }),
+  });
+
+  const hotels = data?.items ?? [];
+
   const filteredHotels = useMemo(() => {
-    if (!search) return mockHotels;
-    return mockHotels.filter(
+    if (!search) return hotels;
+    return hotels.filter(
       (hotel) =>
         hotel.name.toLowerCase().includes(search.toLowerCase()) ||
-        hotel.location?.city.toLowerCase().includes(search.toLowerCase())
+        hotel.locationCity.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
-
-  function roomCountFor(hotelId: string) {
-    return mockRooms.filter((r) => r.hotelId === hotelId && r.isActive).length;
-  }
+  }, [hotels, search]);
 
   return (
     <div className="space-y-6">
@@ -35,14 +37,28 @@ export default function Hotels() {
         className="w-full max-w-md rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
-      {filteredHotels.length === 0 ? (
+      {isLoading && (
+        <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
+          Loading hotels…
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-600">
+          Failed to load hotels.
+        </div>
+      )}
+
+      {!isLoading && !error && filteredHotels.length === 0 && (
         <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
           No hotels found.
         </div>
-      ) : (
+      )}
+
+      {!isLoading && !error && filteredHotels.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredHotels.map((hotel) => (
-            <HotelCard key={hotel.id} hotel={hotel} roomCount={roomCountFor(hotel.id)} />
+            <HotelCard key={hotel.id} hotel={hotel} roomCount={hotel.roomCount} />
           ))}
         </div>
       )}

@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Room } from "../../types/Room";
-import { mockRooms } from "../../data/mockRooms";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+import { roomApi } from "../../api/roomApi";
 
 const ROOM_TYPE_LABEL: Record<Room["type"], string> = {
   Standard: "Standard",
@@ -22,52 +20,11 @@ export default function RoomDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [room, setRoom] = useState<Room | null>(mockRooms[0]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // useEffect(() => {
-  //   if (!id) {
-  //     setError("No room id was provided.");
-  //     setIsLoading(false);
-  //     return;
-  //   }
-
-  //   const controller = new AbortController();
-
-  //   async function fetchRoom() {
-  //     setIsLoading(true);
-  //     setError(null);
-
-  //     try {
-  //       const response = await fetch(`${API_BASE_URL}/api/rooms/${id}`, {
-  //         signal: controller.signal,
-  //       });
-
-  //       if (response.status === 404) {
-  //         setRoom(null);
-  //         setError("Room not found.");
-  //         return;
-  //       }
-
-  //       if (!response.ok) {
-  //         throw new Error(`Request failed with status ${response.status}`);
-  //       }
-
-  //       const data: Room = await response.json();
-  //       setRoom(data);
-  //     } catch (err) {
-  //       if (err instanceof DOMException && err.name === "AbortError") return;
-  //       setError("Something went wrong while loading this room. Please try again.");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   }
-
-  //   fetchRoom();
-
-  //   return () => controller.abort();
-  // }, [id]);
+  const { data: room, isLoading, error } = useQuery({
+    queryKey: ["rooms", id],
+    queryFn: () => roomApi.getRoom(id!),
+    enabled: !!id,
+  });
 
   if (isLoading) {
     return (
@@ -80,7 +37,9 @@ export default function RoomDetails() {
   if (error || !room) {
     return (
       <div className="rounded-xl bg-white p-8 shadow">
-        <p className="text-red-600">{error ?? "Room not found."}</p>
+        <p className="text-red-600">
+          {error ? "Something went wrong while loading this room." : "Room not found."}
+        </p>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -99,14 +58,10 @@ export default function RoomDetails() {
         <Link to="/hotels" className="hover:underline">
           Hotels
         </Link>
-        {room.hotel && (
-          <>
-            <span>/</span>
-            <Link to={`/hotels/${room.hotel.id}`} className="hover:underline">
-              {room.hotel.name}
-            </Link>
-          </>
-        )}
+        <span>/</span>
+        <Link to={`/hotels/${room.hotelId}`} className="hover:underline">
+          {room.hotelName}
+        </Link>
         <span>/</span>
         <span className="text-gray-700">{room.name}</span>
       </nav>
@@ -120,30 +75,15 @@ export default function RoomDetails() {
       )}
 
       {/* Hotel context */}
-      {room.hotel && (
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
-          <div>
-            <Link
-              to={`/hotels/${room.hotel.id}`}
-              className="font-medium text-indigo-600 hover:underline"
-            >
-              {room.hotel.name}
-            </Link>
-            {room.hotel.location && (
-              <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
-                <MapPin size={13} />
-                {room.hotel.location.address}, {room.hotel.location.city},{" "}
-                {room.hotel.location.country}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1 text-sm font-medium text-amber-500">
-            <Star size={14} fill="currentColor" />
-            {room.hotel.starRating}
-          </div>
-        </div>
-      )}
+      <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+        <Link
+          to={`/hotels/${room.hotelId}`}
+          className="flex items-center gap-1 font-medium text-indigo-600 hover:underline"
+        >
+          <MapPin size={13} />
+          {room.hotelName}
+        </Link>
+      </div>
 
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -193,6 +133,7 @@ export default function RoomDetails() {
         <button
           type="button"
           disabled={!room.isActive}
+          onClick={() => navigate("/rooms")}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           Book this room

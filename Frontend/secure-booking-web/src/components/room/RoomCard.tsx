@@ -56,15 +56,14 @@ export default function RoomCard({ room, onView, onBook }: RoomCardProps) {
       </div>
 
       <div className="p-5">
-        {room.hotel && (
+        {room.hotelName && (
           <button
             type="button"
-            onClick={() => navigate(`/hotels/${room.hotel!.id}`)}
+            onClick={() => navigate(`/hotels/${room.hotelId}`)}
             className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline"
           >
             <MapPin size={12} />
-            {room.hotel.name}
-            {room.hotel.location && ` · ${room.hotel.location.city}`}
+            {room.hotelName}
           </button>
         )}
 
