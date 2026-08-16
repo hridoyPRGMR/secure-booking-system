@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
@@ -23,7 +24,7 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<Permission> Permissions { get; set; } = null!;
 
-    Task<int>IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
+    Task<int> IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
 
     async Task IUnitOfWork.BeginTransactionAsync(CancellationToken cancellationToken)
@@ -53,15 +54,40 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
     {
         base.OnModelCreating(modelBuilder);
 
+        var utcConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+        );
+
+        var nullableUtcConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => !v.HasValue ? v : v.Value.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc),
+            v => !v.HasValue ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc)
+        );
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(utcConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(nullableUtcConverter);
+                }
+            }
+        }
+
         modelBuilder.Entity<User>(b =>
         {
             b.HasKey(u => u.Id);
             b.Property(u => u.Email).IsRequired().HasMaxLength(256);
-            b.Property(u=> u.FirstName).IsRequired().HasMaxLength(100);
-            b.Property(u=> u.LastName).IsRequired().HasMaxLength(100);
-            b.Property(u=> u.PasswordHash).IsRequired().HasMaxLength(256);
+            b.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
+            b.Property(u => u.LastName).IsRequired().HasMaxLength(100);
+            b.Property(u => u.PasswordHash).IsRequired().HasMaxLength(256);
 
-            b.HasIndex(u=> u.Email).IsUnique();
+            b.HasIndex(u => u.Email).IsUnique();
         });
 
         modelBuilder.Entity<Room>(b =>
@@ -69,6 +95,7 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
             b.HasKey(r => r.Id);
             b.Property(r => r.Name).IsRequired().HasMaxLength(200);
             b.Property(r => r.PricePerNight).HasPrecision(10, 2);
+            b.Property(r => r.Version).IsConcurrencyToken();
 
             b.HasOne(r => r.Hotel)
                 .WithMany(h => h.Rooms)

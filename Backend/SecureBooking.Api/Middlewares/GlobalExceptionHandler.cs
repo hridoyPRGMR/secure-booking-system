@@ -20,6 +20,8 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 "https://tools.ietf.org/html/rfc9110#section-15.5.5", ex, cancellationToken),
             ConflictException ex => await HandleProblem(httpContext, StatusCodes.Status409Conflict, "Conflict",
                 "https://tools.ietf.org/html/rfc9110#section-15.5.10", ex, cancellationToken),
+            InvalidOperationException ex => await HandleProblem(httpContext, StatusCodes.Status400BadRequest, "Bad Request",
+                "https://tools.ietf.org/html/rfc9110#section-15.5.1", ex, cancellationToken),
             _ => false
         };
     }

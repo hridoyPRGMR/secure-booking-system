@@ -6,6 +6,7 @@ using SecureBooking.Application.Features.Bookings.Commands.CreateBooking;
 using SecureBooking.Domain.Entities;
 using SecureBooking.Shared.Enums;
 using SecureBooking.Application.Features.Bookings;
+using Microsoft.EntityFrameworkCore;
 
 namespace SecureBooking.Application.Features.Bookings.Commands.CreateMyBooking;
 
@@ -25,15 +26,21 @@ public sealed class CreateMyBookingCommandHandler(
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            // Blocks any other transaction trying to book this room until we commit/rollback,
-            // closing the check-then-insert race that the validator's overlap check alone can't.
-            var room = await roomRepository.LockForUpdateAsync(request.RoomId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Room), request.RoomId);
+            var room = await roomRepository.GetByIdAsync(request.RoomId, cancellationToken)
+                ?? throw new NotFoundException("The selected room does not exist or is not available.", request.RoomId);
 
-            // Task.Delay(30000, cancellationToken).Wait(cancellationToken); // Simulate a long-running operation to test the lock
+            if(room is null || !room.IsActive)
+                throw new NotFoundException("The selected room does not exist or is not available.", request.RoomId);
+            
+            var hasOverlap = await db.Bookings.AnyAsync(b =>
+                b.RoomId == request.RoomId &&
+                b.Status != BookingStatus.Cancelled &&
+                b.CheckIn < request.CheckOut &&
+                request.CheckIn < b.CheckOut,
+                cancellationToken);
 
-            if (await CreateBookingCommandValidator.HasOverlapAsync(db, request.RoomId, request.CheckIn, request.CheckOut, null, cancellationToken))
-                throw new ConflictException("This room is already booked for part of the selected date range.");
+            if (hasOverlap)
+                throw new InvalidOperationException("This room is already booked for part of the selected date range.");
 
             var booking = new Booking
             {
@@ -46,6 +53,10 @@ public sealed class CreateMyBookingCommandHandler(
             };
 
             await repository.AddAsync(booking, cancellationToken);
+            
+            // Make the room part of the optimistic concurrency check.
+            room.UpdateVersion();
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
@@ -59,6 +70,11 @@ public sealed class CreateMyBookingCommandHandler(
                 booking.RoomId, room.Name, hotel.Name, booking.CheckIn, booking.CheckOut,
                 booking.Status, booking.Notes, (decimal)(booking.CheckOut - booking.CheckIn).Days * room.PricePerNight,
                 booking.CreatedAt);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw new InvalidOperationException("The room was modified by another user. Please refresh and try again.");
         }
         catch
         {

@@ -18,9 +18,17 @@ public class Room : Entity
     public string? ImageUrl { get; set; }
 
     public bool IsActive { get; set; } = true;
+    public int Version {get; set;} = 1;
 
     public Guid HotelId { get; set; }
     public Hotel? Hotel { get; set; }
 
     public ICollection<Booking> Bookings { get; set; } = [];
+
+    public void UpdateVersion()
+    {
+        Version++;
+        UpdatedAt = DateTime.UtcNow;
+    }
+        
 }
