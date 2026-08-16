@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Repositories;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.CreateBooking;
 
 public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBookingCommand>
 {

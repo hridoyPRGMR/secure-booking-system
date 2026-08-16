@@ -1,7 +1,8 @@
 using MediatR;
 using SecureBooking.Shared.Enums;
+using SecureBooking.Application.Features.Bookings;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.UpdateBooking;
 
 public sealed record UpdateBookingCommand(
     Guid Id,

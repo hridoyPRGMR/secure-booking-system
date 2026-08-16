@@ -2,8 +2,9 @@ using MediatR;
 using SecureBooking.Application.Common.Exceptions;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
+using SecureBooking.Application.Features.Bookings;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.UpdateBooking;
 
 public sealed class UpdateBookingCommandHandler(
     IRepository<Booking> repository,

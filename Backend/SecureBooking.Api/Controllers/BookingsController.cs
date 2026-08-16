@@ -2,7 +2,14 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecureBooking.Application.Common.Security;
-using SecureBooking.Application.Features.Bookings;
+using SecureBooking.Application.Features.Bookings.Commands.CancelMyBooking;
+using SecureBooking.Application.Features.Bookings.Commands.CreateBooking;
+using SecureBooking.Application.Features.Bookings.Commands.CreateMyBooking;
+using SecureBooking.Application.Features.Bookings.Commands.DeleteBooking;
+using SecureBooking.Application.Features.Bookings.Commands.UpdateBooking;
+using SecureBooking.Application.Features.Bookings.Queries.GetBookingById;
+using SecureBooking.Application.Features.Bookings.Queries.ListBookings;
+using SecureBooking.Application.Features.Bookings.Queries.MyBookings;
 using SecureBooking.Shared.Enums;
 
 namespace SecureBooking.Api.Controllers;
@@ -86,6 +93,13 @@ public class BookingsController(IMediator mediator) : ControllerBase
 
     [HttpPost("mine/{id:guid}/cancel")]
     public async Task<IActionResult> CancelMine(Guid id, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new CancelMyBookingCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("mine/reserve")]
+    public async Task<IActionResult> Reservation(Guid id, CancellationToken cancellationToken)
     {
         await mediator.Send(new CancelMyBookingCommand(id), cancellationToken);
         return NoContent();

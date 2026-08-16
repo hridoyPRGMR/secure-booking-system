@@ -5,7 +5,7 @@ using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 using SecureBooking.Shared.Enums;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.CancelMyBooking;
 
 public sealed class CancelMyBookingCommandHandler(
     IRepository<Booking> repository,

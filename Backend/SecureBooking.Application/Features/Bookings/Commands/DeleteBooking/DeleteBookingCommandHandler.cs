@@ -3,7 +3,7 @@ using SecureBooking.Application.Common.Exceptions;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.DeleteBooking;
 
 public sealed class DeleteBookingCommandHandler(
     IRepository<Booking> repository,

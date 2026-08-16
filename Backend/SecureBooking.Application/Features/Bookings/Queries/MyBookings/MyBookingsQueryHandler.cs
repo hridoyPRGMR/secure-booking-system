@@ -3,8 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Authentication;
 using SecureBooking.Application.Common.Models;
 using SecureBooking.Application.Common.Repositories;
+using SecureBooking.Application.Features.Bookings;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Queries.MyBookings;
 
 public sealed class MyBookingsQueryHandler(IApplicationDbContext db, ICurrentUser currentUser)
     : IRequestHandler<MyBookingsQuery, PagedResult<BookingResponse>>

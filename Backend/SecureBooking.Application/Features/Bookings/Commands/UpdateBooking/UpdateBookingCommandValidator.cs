@@ -1,8 +1,9 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Repositories;
+using SecureBooking.Application.Features.Bookings.Commands.CreateBooking;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Commands.UpdateBooking;
 
 public sealed class UpdateBookingCommandValidator : AbstractValidator<UpdateBookingCommand>
 {

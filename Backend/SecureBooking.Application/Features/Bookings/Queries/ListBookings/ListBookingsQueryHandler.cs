@@ -2,8 +2,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SecureBooking.Application.Common.Models;
 using SecureBooking.Application.Common.Repositories;
+using SecureBooking.Application.Features.Bookings;
 
-namespace SecureBooking.Application.Features.Bookings;
+namespace SecureBooking.Application.Features.Bookings.Queries.ListBookings;
 
 public sealed class ListBookingsQueryHandler(IApplicationDbContext db)
     : IRequestHandler<ListBookingsQuery, PagedResult<BookingResponse>>
