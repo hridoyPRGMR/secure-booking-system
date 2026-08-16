@@ -59,6 +59,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository,UserRepository>();
         services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
+        services.AddScoped<IRoomRepository,RoomRepository>();
 
         services.AddScoped<IUnitOfWork>(sp=>
             sp.GetRequiredService<ApplicationDbContext>());

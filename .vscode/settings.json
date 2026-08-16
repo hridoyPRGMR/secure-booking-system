@@ -1,5 +1,5 @@
 {
-    "dotnet.defaultSolution": "Backend.slnx",
+    "dotnet.defaultSolution": "Backend/Backend.slnx",
     "css.validate": false,
     "scss.validate": false,
     "less.validate": false,

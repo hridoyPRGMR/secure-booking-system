@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SecureBooking.Application.Common.Repositories;
 using SecureBooking.Domain.Entities;
 
@@ -7,6 +8,8 @@ namespace SecureBooking.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContext
 {
+    private IDbContextTransaction? _currentTransaction;
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
@@ -22,6 +25,29 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
 
     Task<int>IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
+
+    async Task IUnitOfWork.BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        _currentTransaction = await Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    async Task IUnitOfWork.CommitTransactionAsync(CancellationToken cancellationToken)
+    {
+        if (_currentTransaction is null) return;
+
+        await _currentTransaction.CommitAsync(cancellationToken);
+        await _currentTransaction.DisposeAsync();
+        _currentTransaction = null;
+    }
+
+    async Task IUnitOfWork.RollbackTransactionAsync(CancellationToken cancellationToken)
+    {
+        if (_currentTransaction is null) return;
+
+        await _currentTransaction.RollbackAsync(cancellationToken);
+        await _currentTransaction.DisposeAsync();
+        _currentTransaction = null;
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
