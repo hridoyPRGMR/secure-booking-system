@@ -6,7 +6,7 @@ import axios, {
 } from 'axios'
 import { tokenStore } from '../lib/tokenStore'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5212/api'
 
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh-token']
 

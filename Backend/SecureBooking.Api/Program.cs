@@ -8,6 +8,7 @@ using SecureBooking.Application.Common;
 using SecureBooking.Application.Features.Authentication;
 using SecureBooking.Infrastructure;
 using SecureBooking.Infrastructure.Persistence;
+using SecureBooking.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connection));
 
 var app = builder.Build();
+
+if (app.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment()))
+{
+    using var seedScope = app.Services.CreateScope();
+    var dbContext = seedScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var seedLogger = seedScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await dbContext.Database.MigrateAsync();
+    await LargeDataSeeder.SeedAsync(dbContext, seedLogger);
+}
 
 app.UseExceptionHandler();
 
