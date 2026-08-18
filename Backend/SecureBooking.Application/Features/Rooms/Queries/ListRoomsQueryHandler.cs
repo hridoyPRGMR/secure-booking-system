@@ -25,8 +25,16 @@ public sealed class ListRoomsQueryHandler(IApplicationDbContext db)
         if (request.Type.HasValue)
             query = query.Where(r => r.Type == request.Type);
 
-        if (request.IsActive.HasValue)
-            query = query.Where(r => r.IsActive == request.IsActive);
+        if (request.CheckIn.HasValue && request.CheckOut.HasValue)
+        {
+            var checkIn = DateTime.SpecifyKind(request.CheckIn.Value, DateTimeKind.Utc);
+            var checkOut = DateTime.SpecifyKind(request.CheckOut.Value, DateTimeKind.Utc);
+
+            query = query.Where(r => !r.Bookings.Any(b =>
+                b.Status != Shared.Enums.BookingStatus.Cancelled &&
+                b.CheckIn < checkOut &&
+                checkIn < b.CheckOut));
+        }
 
         query = request.SortBy?.ToLowerInvariant() switch
         {

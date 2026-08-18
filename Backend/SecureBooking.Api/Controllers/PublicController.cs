@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecureBooking.Application.Features.Hotels;
+using SecureBooking.Application.Features.Locations.Queries;
 using SecureBooking.Application.Features.Rooms.Queries;
 using SecureBooking.Shared.Enums;
 
@@ -46,10 +47,12 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] bool sortDescending = false,
         [FromQuery] Guid? hotelId = null,
         [FromQuery] RoomType? type = null,
+        [FromQuery] DateTime? checkIn = null,
+        [FromQuery] DateTime? checkOut = null,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true),
+            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true, checkIn, checkOut),
             cancellationToken);
         return Ok(result);
     }
@@ -58,6 +61,15 @@ public class PublicController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetRoom(Guid id, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new GetRoomByIdQuery(id), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("locations")]
+    public async Task<IActionResult> SearchLocations(
+        [FromQuery] string? search = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await mediator.Send(new SearchLocationsQuery(20,search), cancellationToken);
         return Ok(result);
     }
 }

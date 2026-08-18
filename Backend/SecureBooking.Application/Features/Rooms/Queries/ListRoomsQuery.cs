@@ -13,5 +13,7 @@ public sealed record ListRoomsQuery(
     bool SortDescending = false,
     Guid? HotelId = null,
     RoomType? Type = null,
-    bool? IsActive = null
+    bool? IsActive = null,
+    DateTime? CheckIn = null,
+    DateTime? CheckOut = null
 ) : IRequest<PagedResult<RoomResponse>>;

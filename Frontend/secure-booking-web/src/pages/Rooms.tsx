@@ -22,6 +22,8 @@ const DEFAULT_FILTERS: RoomFilterState = {
   minCapacity: "",
   maxPrice: "",
   onlyAvailable: false,
+  checkIn: "",
+  checkOut: "",
 };
 
 export default function Rooms() {
@@ -87,7 +89,11 @@ export default function Rooms() {
     filters.minCapacity !== "",
     filters.maxPrice !== "",
     filters.onlyAvailable,
+    filters.checkIn !== "",
+    filters.checkOut !== "",
   ].filter(Boolean).length;
+
+  const hasDateRange = Boolean(filters.checkIn && filters.checkOut);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["rooms", filters, currentPage],
@@ -102,7 +108,10 @@ export default function Rooms() {
         minCapacity: filters.minCapacity || undefined,
         maxPrice: filters.maxPrice || undefined,
         onlyAvailable: filters.onlyAvailable,
+        checkIn: filters.checkIn,
+        checkOut: filters.checkOut,
       }),
+    enabled: hasDateRange,
   });
 
   const rooms = data?.items ?? [];
@@ -111,11 +120,11 @@ export default function Rooms() {
     Math.ceil((data?.totalCount ?? 0) / PAGE_SIZE)
   );
 
-  if (isLoading) {
+  if (hasDateRange && isLoading) {
     return <div>Loading rooms...</div>;
   }
 
-  if (error) {
+  if (hasDateRange && error) {
     return (
       <div className="rounded-lg border border-red-300 bg-red-50 p-4">
         Failed to load rooms.
@@ -142,7 +151,9 @@ export default function Rooms() {
       <div className="min-w-0 flex-1 space-y-6">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {data?.totalCount ?? 0} room{(data?.totalCount ?? 0) !== 1 ? "s" : ""} found
+            {hasDateRange
+              ? `${data?.totalCount ?? 0} room${(data?.totalCount ?? 0) !== 1 ? "s" : ""} found`
+              : "Select check-in and check-out dates to search rooms"}
           </p>
 
           <button
@@ -160,13 +171,21 @@ export default function Rooms() {
           </button>
         </div>
 
-        <RoomGrid
-          rooms={rooms}
-          onView={(room) => console.log(room)}
-          onBook={setSelectedRoom}
-        />
+        {hasDateRange ? (
+          <RoomGrid
+            rooms={rooms}
+            onView={(room) => console.log(room)}
+            onBook={setSelectedRoom}
+          />
+        ) : (
+          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-10 text-center text-sm text-gray-500">
+            Pick your check-in and check-out dates in the filters to see available rooms.
+          </div>
+        )}
 
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        {hasDateRange && (
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        )}
       </div>
 
       {/* Mobile filter drawer */}

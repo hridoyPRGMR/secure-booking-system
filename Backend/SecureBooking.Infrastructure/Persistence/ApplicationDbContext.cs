@@ -52,7 +52,9 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasPostgresExtension("pg_trgm");
 
         var utcConverter = new ValueConverter<DateTime, DateTime>(
             v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
@@ -108,6 +110,9 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
             b.HasKey(x => x.Id);
             b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne(x => x.Room).WithMany(r => r.Bookings).HasForeignKey(x => x.RoomId).OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasIndex(x => new { x.RoomId, x.CheckIn, x.CheckOut }).IsUnique();
+
         });
 
         modelBuilder.Entity<Location>(b =>
@@ -116,6 +121,10 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
             b.Property(l => l.City).IsRequired().HasMaxLength(100);
             b.Property(l => l.Country).IsRequired().HasMaxLength(100);
             b.Property(l => l.Address).IsRequired().HasMaxLength(300);
+
+            b.HasIndex(l=> new {l.City, l.Country, l.Address})
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops");
         });
 
         modelBuilder.Entity<Hotel>(b =>

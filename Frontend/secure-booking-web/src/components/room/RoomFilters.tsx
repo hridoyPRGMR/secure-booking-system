@@ -9,6 +9,8 @@ export interface RoomFilterState {
   minCapacity: number | "";
   maxPrice: number | "";
   onlyAvailable: boolean;
+  checkIn: string;
+  checkOut: string;
 }
 
 interface HotelOption {
@@ -45,6 +47,12 @@ export default function RoomFilters({
       onChange({ ...filters, city: value as RoomFilterState["city"], hotelId: "All" });
       return;
     }
+    if (key === "checkIn") {
+      const checkIn = value as string;
+      const checkOut = filters.checkOut && filters.checkOut > checkIn ? filters.checkOut : "";
+      onChange({ ...filters, checkIn, checkOut });
+      return;
+    }
     onChange({ ...filters, [key]: value });
   }
 
@@ -55,7 +63,11 @@ export default function RoomFilters({
     filters.hotelId !== "All" ||
     filters.minCapacity !== "" ||
     filters.maxPrice !== "" ||
-    filters.onlyAvailable;
+    filters.onlyAvailable ||
+    filters.checkIn !== "" ||
+    filters.checkOut !== "";
+
+  const todayIso = new Date().toISOString().slice(0, 10);
 
   const hotelsInCity =
     filters.city === "All" ? hotels : hotels.filter((h) => h.city === filters.city);
@@ -89,6 +101,41 @@ export default function RoomFilters({
             />
           </div>
         </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Check-in <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              min={todayIso}
+              value={filters.checkIn}
+              onChange={(e) => update("checkIn", e.target.value)}
+              className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Check-out <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              min={filters.checkIn || todayIso}
+              value={filters.checkOut}
+              disabled={!filters.checkIn}
+              onChange={(e) => update("checkOut", e.target.value)}
+              className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
+            />
+          </div>
+        </div>
+        {!(filters.checkIn && filters.checkOut) && (
+          <p className="-mt-3 text-xs text-amber-600">
+            Select check-in and check-out dates to search rooms.
+          </p>
+        )}
 
         <div>
           <label className="text-sm font-medium text-gray-700">City</label>

@@ -12,6 +12,8 @@ export interface GetRoomsRequest {
   minCapacity?: number;
   maxPrice?: number;
   onlyAvailable?: boolean;
+  checkIn?: string;
+  checkOut?: string;
 }
 
 class RoomApi {

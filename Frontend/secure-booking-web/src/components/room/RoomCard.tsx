@@ -44,14 +44,8 @@ export default function RoomCard({ room, onView, onBook }: RoomCardProps) {
           </div>
         )}
 
-        <span
-          className={`absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium ${
-            room.isActive
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-200 text-gray-600"
-          }`}
-        >
-          {room.isActive ? "Available" : "Unavailable"}
+        <span className="absolute right-3 top-3 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+          Available
         </span>
       </div>
 
@@ -98,8 +92,7 @@ export default function RoomCard({ room, onView, onBook }: RoomCardProps) {
           <button
             type="button"
             onClick={() => onBook?.(room)}
-            disabled={!room.isActive}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
           >
             Book
           </button>
