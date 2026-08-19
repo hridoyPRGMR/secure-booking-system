@@ -34,24 +34,28 @@ export default function Hotels() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search hotels or cities…"
-        className="w-full max-w-md rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="input w-full max-w-md"
       />
 
       {isLoading && (
-        <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
-          Loading hotels…
+        <div className="card card-border bg-base-100">
+          <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
+            Loading hotels…
+          </div>
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-600">
+        <div role="alert" className="alert alert-error text-sm">
           Failed to load hotels.
         </div>
       )}
 
       {!isLoading && !error && filteredHotels.length === 0 && (
-        <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
-          No hotels found.
+        <div className="card card-border bg-base-100">
+          <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
+            No hotels found.
+          </div>
         </div>
       )}
 

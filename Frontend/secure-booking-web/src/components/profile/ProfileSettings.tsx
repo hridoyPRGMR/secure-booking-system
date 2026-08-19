@@ -195,153 +195,136 @@ export default function ProfileSettings() {
       </div>
 
       {/* Avatar + basic info */}
-      <div className="flex items-center gap-4 rounded-xl border bg-white p-6 shadow-sm">
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.fullName}
-            className="h-16 w-16 rounded-full object-cover"
-          />
-        ) : (
-          <UserCircle className="h-16 w-16 text-gray-300" />
-        )}
+      <div className="card card-border bg-base-100">
+        <div className="card-body flex-row items-center gap-4">
+          {user.avatarUrl ? (
+            <div className="avatar">
+              <div className="h-16 w-16 rounded-full">
+                <img src={user.avatarUrl} alt={user.fullName} />
+              </div>
+            </div>
+          ) : (
+            <UserCircle className="h-16 w-16 text-base-content/30" />
+          )}
 
-        <div>
-          <p className="text-lg font-semibold">{user.fullName}</p>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <div>
+            <p className="text-lg font-semibold">{user.fullName}</p>
+            <p className="text-sm text-base-content/60">{user.email}</p>
+          </div>
         </div>
       </div>
 
       {/* Profile form */}
-      <form
-        onSubmit={handleProfileSubmit}
-        className="space-y-5 rounded-xl border bg-white p-6 shadow-sm"
-      >
-        <h2 className="text-lg font-semibold">Personal information</h2>
+      <form onSubmit={handleProfileSubmit} className="card card-border bg-base-100">
+        <div className="card-body gap-5">
+          <h2 className="card-title text-lg">Personal information</h2>
 
-        {profileSuccess && (
-          <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-            Profile updated successfully.
-          </div>
-        )}
-        {profileSubmitError && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
-            {profileSubmitError}
-          </div>
-        )}
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">Full name</label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {profileErrors.fullName && (
-            <p className="mt-1 text-xs text-red-600">{profileErrors.fullName}</p>
+          {profileSuccess && (
+            <div role="alert" className="alert alert-success text-sm">
+              Profile updated successfully.
+            </div>
           )}
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            value={user.email}
-            disabled
-            className="mt-1 w-full cursor-not-allowed rounded-lg border bg-gray-50 px-3 py-2 text-sm text-gray-500"
-          />
-          <p className="mt-1 text-xs text-gray-400">
-            Contact support to change your email address.
-          </p>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">Phone (optional)</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {profileErrors.phone && (
-            <p className="mt-1 text-xs text-red-600">{profileErrors.phone}</p>
+          {profileSubmitError && (
+            <div role="alert" className="alert alert-error text-sm">
+              {profileSubmitError}
+            </div>
           )}
-        </div>
 
-        <button
-          type="submit"
-          disabled={isSavingProfile}
-          className="rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
-          {isSavingProfile ? "Saving…" : "Save changes"}
-        </button>
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">Full name</legend>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="input w-full"
+            />
+            {profileErrors.fullName && <p className="label text-error">{profileErrors.fullName}</p>}
+          </fieldset>
+
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">Email</legend>
+            <input type="email" value={user.email} disabled className="input w-full" />
+            <p className="label">Contact support to change your email address.</p>
+          </fieldset>
+
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">Phone (optional)</legend>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="input w-full"
+            />
+            {profileErrors.phone && <p className="label text-error">{profileErrors.phone}</p>}
+          </fieldset>
+
+          <div className="card-actions">
+            <button type="submit" disabled={isSavingProfile} className="btn btn-primary">
+              {isSavingProfile ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </div>
       </form>
 
       {/* Password form */}
-      <form
-        onSubmit={handlePasswordSubmit}
-        className="space-y-5 rounded-xl border bg-white p-6 shadow-sm"
-      >
-        <h2 className="text-lg font-semibold">Change password</h2>
+      <form onSubmit={handlePasswordSubmit} className="card card-border bg-base-100">
+        <div className="card-body gap-5">
+          <h2 className="card-title text-lg">Change password</h2>
 
-        {passwordSuccess && (
-          <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-            Password changed successfully.
+          {passwordSuccess && (
+            <div role="alert" className="alert alert-success text-sm">
+              Password changed successfully.
+            </div>
+          )}
+          {passwordSubmitError && (
+            <div role="alert" className="alert alert-error text-sm">
+              {passwordSubmitError}
+            </div>
+          )}
+
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">Current password</legend>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="input w-full"
+            />
+            {passwordErrors.currentPassword && (
+              <p className="label text-error">{passwordErrors.currentPassword}</p>
+            )}
+          </fieldset>
+
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">New password</legend>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="input w-full"
+            />
+            {passwordErrors.newPassword && <p className="label text-error">{passwordErrors.newPassword}</p>}
+          </fieldset>
+
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">Confirm new password</legend>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="input w-full"
+            />
+            {passwordErrors.confirmPassword && (
+              <p className="label text-error">{passwordErrors.confirmPassword}</p>
+            )}
+          </fieldset>
+
+          <div className="card-actions">
+            <button type="submit" disabled={isSavingPassword} className="btn btn-primary">
+              {isSavingPassword ? "Updating…" : "Update password"}
+            </button>
           </div>
-        )}
-        {passwordSubmitError && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
-            {passwordSubmitError}
-          </div>
-        )}
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">Current password</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {passwordErrors.currentPassword && (
-            <p className="mt-1 text-xs text-red-600">{passwordErrors.currentPassword}</p>
-          )}
         </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">New password</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {passwordErrors.newPassword && (
-            <p className="mt-1 text-xs text-red-600">{passwordErrors.newPassword}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">Confirm new password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {passwordErrors.confirmPassword && (
-            <p className="mt-1 text-xs text-red-600">{passwordErrors.confirmPassword}</p>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSavingPassword}
-          className="rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
-          {isSavingPassword ? "Updating…" : "Update password"}
-        </button>
       </form>
     </div>
   );

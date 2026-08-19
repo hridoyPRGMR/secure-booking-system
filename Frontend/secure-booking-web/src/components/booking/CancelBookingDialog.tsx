@@ -25,11 +25,11 @@ export default function CancelBookingDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-lg"
+        className="w-full max-w-sm rounded-xl bg-base-100 p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold">Cancel booking?</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-base-content/70">
           This will cancel the booking for{" "}
           <span className="font-medium">{booking.roomName}</span> from{" "}
           {new Date(booking.checkIn).toLocaleDateString()} to{" "}
@@ -37,23 +37,20 @@ export default function CancelBookingDialog({
         </p>
 
         {error && (
-          <div className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div>
+          <div role="alert" className="alert alert-error mt-3 text-sm">
+            {error}
+          </div>
         )}
 
         <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed"
-          >
+          <button type="button" onClick={onClose} disabled={isSubmitting} className="btn btn-outline btn-sm">
             Keep booking
           </button>
           <button
             type="button"
             onClick={() => onConfirm(booking)}
             disabled={isSubmitting}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+            className="btn btn-error btn-sm"
           >
             {isSubmitting ? "Cancelling…" : "Yes, cancel"}
           </button>

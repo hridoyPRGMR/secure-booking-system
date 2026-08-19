@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import RoomGrid from "../components/room/RoomGrid";
 import BookRoomModal from "../components/room/BookRoomModal";
 import RoomFilters, { type RoomFilterState } from "../components/room/RoomFilters";
@@ -17,7 +17,7 @@ const PAGE_SIZE = 6;
 const DEFAULT_FILTERS: RoomFilterState = {
   search: "",
   type: "All",
-  city: "All",
+  location: null,
   hotelId: "All",
   minCapacity: "",
   maxPrice: "",
@@ -41,15 +41,16 @@ export default function Rooms() {
   }, [filters]);
 
   const { data: hotelsData } = useQuery({
-    queryKey: ["hotels", "all"],
-    queryFn: () => hotelApi.getHotels({ page: 1, pageSize: 100 }),
+    queryKey: ["hotels", "all", filters.location?.city ?? "All", filters.location?.country ?? "All"],
+    queryFn: () =>
+      hotelApi.getHotels({
+        page: 1,
+        pageSize: 100,
+        city: filters.location?.city,
+        country: filters.location?.country,
+      }),
   });
   const hotels = hotelsData?.items ?? [];
-
-  const cities = useMemo(
-    () => Array.from(new Set(hotels.map((h) => h.locationCity).filter(Boolean))),
-    [hotels]
-  );
 
   const hotelOptions = useMemo(
     () =>
@@ -84,7 +85,7 @@ export default function Rooms() {
   const activeFilterCount = [
     filters.search !== "",
     filters.type !== "All",
-    filters.city !== "All",
+    filters.location !== null,
     filters.hotelId !== "All",
     filters.minCapacity !== "",
     filters.maxPrice !== "",
@@ -103,7 +104,8 @@ export default function Rooms() {
         pageSize: PAGE_SIZE,
         search: filters.search || undefined,
         hotelId: filters.hotelId === "All" ? undefined : filters.hotelId,
-        city: filters.city === "All" ? undefined : filters.city,
+        city: filters.location?.city,
+        country: filters.location?.country,
         type: filters.type === "All" ? undefined : filters.type,
         minCapacity: filters.minCapacity || undefined,
         maxPrice: filters.maxPrice || undefined,
@@ -126,106 +128,100 @@ export default function Rooms() {
 
   if (hasDateRange && error) {
     return (
-      <div className="rounded-lg border border-red-300 bg-red-50 p-4">
+      <div role="alert" className="alert alert-error">
         Failed to load rooms.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-      {/* Desktop sidebar */}
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      {/* Desktop sidebar: kept outside the drawer entirely. daisyUI's drawer applies
+          `will-change: transform` to its side panel whenever the toggle is unchecked
+          (needed for the mobile slide animation) — and on desktop the toggle is never
+          checked, since `lg:drawer-open` shows the panel via CSS alone. Chromium
+          mis-positions native <select> popups under a `will-change: transform`
+          ancestor, so the Hotel/Room type dropdowns must live outside it. */}
       <aside className="hidden w-72 shrink-0 lg:block">
-        <div className="sticky top-24">
+        <div className="sticky top-10">
           <RoomFilters
             filters={filters}
             onChange={setFilters}
             onReset={() => setFilters(DEFAULT_FILTERS)}
-            cities={cities}
             hotels={hotelOptions}
           />
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="min-w-0 flex-1 space-y-6">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            {hasDateRange
-              ? `${data?.totalCount ?? 0} room${(data?.totalCount ?? 0) !== 1 ? "s" : ""} found`
-              : "Select check-in and check-out dates to search rooms"}
-          </p>
+      <div className="drawer min-w-0 flex-1 lg:contents">
+        <input
+          id="room-filters-drawer"
+          type="checkbox"
+          className="drawer-toggle"
+          checked={mobileFiltersOpen}
+          onChange={(e) => setMobileFiltersOpen(e.target.checked)}
+        />
 
-          <button
-            type="button"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100 lg:hidden"
-          >
-            <SlidersHorizontal size={16} />
-            Filters
-            {activeFilterCount > 0 && (
-              <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-xs text-white">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
+        {/* Main content */}
+        <div className="drawer-content min-w-0 space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-base-content/60">
+              {hasDateRange
+                ? `${data?.totalCount ?? 0} room${(data?.totalCount ?? 0) !== 1 ? "s" : ""} found`
+                : "Select check-in and check-out dates to search rooms"}
+            </p>
+
+            <label
+              htmlFor="room-filters-drawer"
+              className="btn btn-outline btn-sm drawer-button gap-2 lg:hidden"
+            >
+              <SlidersHorizontal size={16} />
+              Filters
+              {activeFilterCount > 0 && <span className="badge badge-sm">{activeFilterCount}</span>}
+            </label>
+          </div>
+
+          {hasDateRange ? (
+            <RoomGrid
+              rooms={rooms}
+              onView={(room) => console.log(room)}
+              onBook={setSelectedRoom}
+            />
+          ) : (
+            <div className="card card-dash bg-base-200">
+              <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
+                Pick your check-in and check-out dates in the filters to see available rooms.
+              </div>
+            </div>
+          )}
+
+          {hasDateRange && (
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          )}
         </div>
 
-        {hasDateRange ? (
-          <RoomGrid
-            rooms={rooms}
-            onView={(room) => console.log(room)}
-            onBook={setSelectedRoom}
-          />
-        ) : (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-10 text-center text-sm text-gray-500">
-            Pick your check-in and check-out dates in the filters to see available rooms.
-          </div>
-        )}
+        {/* Off-canvas filter drawer: mobile only */}
+        <div className="drawer-side z-20 lg:hidden">
+          <label
+            htmlFor="room-filters-drawer"
+            aria-label="Close filters"
+            className="drawer-overlay"
+          ></label>
 
-        {hasDateRange && (
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        )}
-      </div>
-
-      {/* Mobile filter drawer */}
-      {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileFiltersOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] overflow-y-auto bg-slate-100 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Filters</h2>
-              <button
-                type="button"
-                onClick={() => setMobileFiltersOpen(false)}
-                aria-label="Close filters"
-                className="rounded-lg p-1 hover:bg-gray-200"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
+          <div className="min-h-full w-80 max-w-[85vw] bg-base-200 p-4">
             <RoomFilters
               filters={filters}
               onChange={setFilters}
               onReset={() => setFilters(DEFAULT_FILTERS)}
-              cities={cities}
               hotels={hotelOptions}
             />
 
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(false)}
-              className="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
-            >
+            <label htmlFor="room-filters-drawer" className="btn btn-primary btn-block mt-4">
               Show {data?.totalCount ?? 0} results
-            </button>
+            </label>
           </div>
         </div>
-      )}
+      </div>
 
       <BookRoomModal
         room={selectedRoom}

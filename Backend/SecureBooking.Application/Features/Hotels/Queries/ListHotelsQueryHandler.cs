@@ -21,6 +21,12 @@ public sealed class ListHotelsQueryHandler(IApplicationDbContext db)
         if (request.LocationId.HasValue)
             query = query.Where(h => h.LocationId == request.LocationId);
 
+        if (!string.IsNullOrWhiteSpace(request.City))
+            query = query.Where(h => h.Location!.City == request.City);
+
+        if (!string.IsNullOrWhiteSpace(request.Country))
+            query = query.Where(h => h.Location!.Country == request.Country);
+
         if (request.IsActive.HasValue)
             query = query.Where(h => h.IsActive == request.IsActive);
 

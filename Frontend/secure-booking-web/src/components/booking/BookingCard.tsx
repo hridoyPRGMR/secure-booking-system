@@ -7,12 +7,12 @@ interface BookingCardProps {
   onCancel?: (booking: Booking) => void;
 }
 
-const STATUS_STYLES: Record<BookingStatus, string> = {
-  [BookingStatus.Pending]: "bg-yellow-100 text-yellow-700",
-  [BookingStatus.Confirmed]: "bg-green-100 text-green-700",
-  [BookingStatus.CheckedIn]: "bg-blue-100 text-blue-700",
-  [BookingStatus.CheckedOut]: "bg-gray-200 text-gray-600",
-  [BookingStatus.Cancelled]: "bg-red-100 text-red-700",
+const STATUS_BADGE: Record<BookingStatus, string> = {
+  [BookingStatus.Pending]: "badge-warning",
+  [BookingStatus.Confirmed]: "badge-success",
+  [BookingStatus.CheckedIn]: "badge-info",
+  [BookingStatus.CheckedOut]: "badge-neutral",
+  [BookingStatus.Cancelled]: "badge-error",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -38,58 +38,50 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
     booking.status !== BookingStatus.CheckedOut;
 
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm transition hover:shadow-lg">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 className="text-lg font-semibold">{booking.roomName}</h3>
-          <p className="mt-1 text-sm text-gray-500">{booking.hotelName}</p>
+    <div className="card card-border bg-base-100 transition hover:shadow-lg">
+      <div className="card-body">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="card-title text-base">{booking.roomName}</h3>
+            <p className="mt-1 text-sm text-base-content/60">{booking.hotelName}</p>
+          </div>
+
+          <span className={`badge ${STATUS_BADGE[booking.status]}`}>{booking.status}</span>
         </div>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[booking.status]}`}
-        >
-          {booking.status}
-        </span>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <p className="text-gray-500">Check-in</p>
-          <p className="font-medium">{dateFormatter.format(new Date(booking.checkIn))}</p>
+        <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-base-content/60">Check-in</p>
+            <p className="font-medium">{dateFormatter.format(new Date(booking.checkIn))}</p>
+          </div>
+          <div>
+            <p className="text-base-content/60">Check-out</p>
+            <p className="font-medium">{dateFormatter.format(new Date(booking.checkOut))}</p>
+          </div>
+          <div>
+            <p className="text-base-content/60">Nights</p>
+            <p className="font-medium">{nights}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-gray-500">Check-out</p>
-          <p className="font-medium">{dateFormatter.format(new Date(booking.checkOut))}</p>
-        </div>
-        <div>
-          <p className="text-gray-500">Nights</p>
-          <p className="font-medium">{nights}</p>
-        </div>
-      </div>
 
-      <div className="mt-4 flex items-center justify-between border-t pt-4">
-        <p className="text-lg font-semibold text-indigo-600">
-          {currencyFormatter.format(booking.totalPrice)}
-        </p>
+        <div className="card-actions mt-2 items-center justify-between border-t pt-4">
+          <p className="text-lg font-semibold">{currencyFormatter.format(booking.totalPrice)}</p>
 
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => onView?.(booking)}
-            className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100"
-          >
-            View
-          </button>
-
-          {canCancel && (
-            <button
-              type="button"
-              onClick={() => onCancel?.(booking)}
-              className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-            >
-              Cancel
+          <div className="flex gap-3">
+            <button type="button" onClick={() => onView?.(booking)} className="btn btn-outline btn-sm">
+              View
             </button>
-          )}
+
+            {canCancel && (
+              <button
+                type="button"
+                onClick={() => onCancel?.(booking)}
+                className="btn btn-error btn-soft btn-sm"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

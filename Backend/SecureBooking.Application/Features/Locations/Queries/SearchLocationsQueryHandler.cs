@@ -23,14 +23,11 @@ public sealed class SearchLocationsQueryHandler(IApplicationDbContext db)
                 EF.Functions.ILike(l.City, pattern) ||
                 EF.Functions.ILike(l.Country, pattern) ||
                 EF.Functions.ILike(l.Address, pattern))
+            .Select(l => new { l.City, l.Country })
+            .Distinct()
             .OrderBy(l => l.City)
             .Take(request.Limit)
-            .Select(l => new SearchLocationsResponse(
-                l.Id,
-                string.IsNullOrEmpty(l.Address)
-                    ? $"{l.City}, {l.Country}"
-                    : $"{l.Address}, {l.City}, {l.Country}"
-            ))
+            .Select(l => new SearchLocationsResponse(l.City, l.Country, $"{l.City}, {l.Country}"))
             .ToListAsync(cancellationToken);
     }
 }

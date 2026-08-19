@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(node test-daisyui-check.mjs)",
+      "Bash(cd \"f:/Hridoy/secure-booking-system/Frontend/secure-booking-web\" && rm -f test-daisyui-check.mjs test-visual-check.mjs daisyui-*.png visual-check-rooms.png)",
+      "Bash(node test-dark-fix.mjs)",
+      "Bash(node test-select-check.mjs)",
+      "Bash(cd \"f:/Hridoy/secure-booking-system/Frontend/secure-booking-web\" && rm -f test-select-check.mjs select-check-*.png)",
+      "Bash(node test-select-fix.mjs)",
+      "Bash(node test-cards-check.mjs)",
+      "Bash(node test-cards-check2.mjs)",
+      "Bash(node test-cards-check3.mjs)",
+      "Bash(cd \"f:/Hridoy/secure-booking-system/Frontend/secure-booking-web\" && rm -f test-cards-check*.mjs check-*.png)",
+      "Bash(node test-navbar.mjs)"
+    ],
+    "additionalDirectories": [
+      "F:\\Hridoy\\secure-booking-system\\Frontend\\secure-booking-web"
+    ]
+  }
+}

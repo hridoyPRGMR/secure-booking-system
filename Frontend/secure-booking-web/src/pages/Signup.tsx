@@ -49,115 +49,95 @@ export default function Signup() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="mb-2 text-center text-3xl font-bold">Create Account</h1>
-        <p className="mb-6 text-center text-sm text-gray-500">Start your journey today.</p>
+    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4">
+      <div className="card w-full max-w-md bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h1 className="text-center text-3xl font-bold">Create Account</h1>
+          <p className="mb-2 text-center text-sm text-base-content/60">Start your journey today.</p>
 
-        {generalError && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
-            {generalError}
-          </div>
-        )}
+          {generalError && (
+            <div role="alert" className="alert alert-error text-sm">
+              {generalError}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">First name</label>
-              <input
-                type="text"
-                disabled={isSubmitting}
-                placeholder="John"
-                {...register('firstName')}
-                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                  errors.firstName ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.firstName && (
-                <span className="mt-1 block text-xs text-red-500">{errors.firstName.message}</span>
-              )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+            <div className="grid grid-cols-2 gap-4">
+              <fieldset className="fieldset p-0">
+                <legend className="fieldset-legend">First name</legend>
+                <input
+                  type="text"
+                  disabled={isSubmitting}
+                  placeholder="John"
+                  {...register('firstName')}
+                  className={`input w-full ${errors.firstName ? 'input-error' : ''}`}
+                />
+                {errors.firstName && <p className="label text-error">{errors.firstName.message}</p>}
+              </fieldset>
+
+              <fieldset className="fieldset p-0">
+                <legend className="fieldset-legend">Last name</legend>
+                <input
+                  type="text"
+                  disabled={isSubmitting}
+                  placeholder="Doe"
+                  {...register('lastName')}
+                  className={`input w-full ${errors.lastName ? 'input-error' : ''}`}
+                />
+                {errors.lastName && <p className="label text-error">{errors.lastName.message}</p>}
+              </fieldset>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Last name</label>
+            <fieldset className="fieldset p-0">
+              <legend className="fieldset-legend">Email</legend>
               <input
-                type="text"
+                type="email"
                 disabled={isSubmitting}
-                placeholder="Doe"
-                {...register('lastName')}
-                className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                  errors.lastName ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
-                }`}
+                placeholder="john@example.com"
+                {...register('email')}
+                className={`input w-full ${errors.email ? 'input-error' : ''}`}
               />
-              {errors.lastName && (
-                <span className="mt-1 block text-xs text-red-500">{errors.lastName.message}</span>
+              {errors.email && <p className="label text-error">{errors.email.message}</p>}
+            </fieldset>
+
+            <fieldset className="fieldset p-0">
+              <legend className="fieldset-legend">Password</legend>
+              <input
+                type="password"
+                disabled={isSubmitting}
+                placeholder="••••••••"
+                {...register('password')}
+                className={`input w-full ${errors.password ? 'input-error' : ''}`}
+              />
+              {errors.password && <p className="label text-error">{errors.password.message}</p>}
+            </fieldset>
+
+            <fieldset className="fieldset p-0">
+              <legend className="fieldset-legend">Confirm password</legend>
+              <input
+                type="password"
+                disabled={isSubmitting}
+                placeholder="••••••••"
+                {...register('confirmPassword')}
+                className={`input w-full ${errors.confirmPassword ? 'input-error' : ''}`}
+              />
+              {errors.confirmPassword && (
+                <p className="label text-error">{errors.confirmPassword.message}</p>
               )}
-            </div>
-          </div>
+            </fieldset>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              disabled={isSubmitting}
-              placeholder="john@example.com"
-              {...register('email')}
-              className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.email && (
-              <span className="mt-1 block text-xs text-red-500">{errors.email.message}</span>
-            )}
-          </div>
+            <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              disabled={isSubmitting}
-              placeholder="••••••••"
-              {...register('password')}
-              className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.password && (
-              <span className="mt-1 block text-xs text-red-500">{errors.password.message}</span>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Confirm password</label>
-            <input
-              type="password"
-              disabled={isSubmitting}
-              placeholder="••••••••"
-              {...register('confirmPassword')}
-              className={`w-full rounded-lg border px-4 py-3 outline-none transition focus:border-indigo-500 ${
-                errors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.confirmPassword && (
-              <span className="mt-1 block text-xs text-red-500">{errors.confirmPassword.message}</span>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-indigo-600 hover:underline">
-            Login
-          </Link>
-        </p>
+          <p className="text-center text-sm text-base-content/60">
+            Already have an account?{' '}
+            <Link to="/login" className="link link-primary font-medium">
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

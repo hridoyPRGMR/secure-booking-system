@@ -8,12 +8,12 @@ interface BookingTableProps {
   onCancel?: (booking: Booking) => void;
 }
 
-const STATUS_STYLES: Record<BookingStatus, string> = {
-  [BookingStatus.Pending]: "bg-yellow-100 text-yellow-700",
-  [BookingStatus.Confirmed]: "bg-green-100 text-green-700",
-  [BookingStatus.CheckedIn]: "bg-blue-100 text-blue-700",
-  [BookingStatus.CheckedOut]: "bg-gray-200 text-gray-600",
-  [BookingStatus.Cancelled]: "bg-red-100 text-red-700",
+const STATUS_BADGE: Record<BookingStatus, string> = {
+  [BookingStatus.Pending]: "badge-warning",
+  [BookingStatus.Confirmed]: "badge-success",
+  [BookingStatus.CheckedIn]: "badge-info",
+  [BookingStatus.CheckedOut]: "badge-neutral",
+  [BookingStatus.Cancelled]: "badge-error",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -34,72 +34,62 @@ export default function BookingTable({
   onCancel,
 }: BookingTableProps) {
   if (isLoading) {
-    return <p className="p-6 text-sm text-gray-500">Loading bookings…</p>;
+    return <p className="p-6 text-sm text-base-content/60">Loading bookings…</p>;
   }
 
   if (bookings.length === 0) {
     return (
-      <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
-        No bookings found.
+      <div className="card card-border bg-base-100">
+        <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
+          No bookings found.
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="card card-border overflow-x-auto bg-base-100">
+      <table className="table">
+        <thead>
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Room</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Hotel</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Check-in</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Check-out</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Status</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">Total</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+            <th>Room</th>
+            <th>Hotel</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Status</th>
+            <th className="text-right">Total</th>
+            <th className="text-right">Actions</th>
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-gray-100">
+        <tbody>
           {bookings.map((booking) => {
             const canCancel =
               booking.status !== BookingStatus.Cancelled &&
               booking.status !== BookingStatus.CheckedOut;
 
             return (
-              <tr key={booking.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-700">{booking.roomName}</td>
-                <td className="px-4 py-3 text-gray-700">{booking.hotelName}</td>
-                <td className="px-4 py-3 text-gray-700">
-                  {dateFormatter.format(new Date(booking.checkIn))}
+              <tr key={booking.id}>
+                <td>{booking.roomName}</td>
+                <td>{booking.hotelName}</td>
+                <td>{dateFormatter.format(new Date(booking.checkIn))}</td>
+                <td>{dateFormatter.format(new Date(booking.checkOut))}</td>
+                <td>
+                  <span className={`badge ${STATUS_BADGE[booking.status]}`}>{booking.status}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-700">
-                  {dateFormatter.format(new Date(booking.checkOut))}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[booking.status]}`}
-                  >
-                    {booking.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right font-medium text-gray-900">
+                <td className="text-right font-medium">
                   {currencyFormatter.format(booking.totalPrice)}
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onView?.(booking)}
-                      className="rounded-lg border px-3 py-1.5 text-xs hover:bg-gray-100"
-                    >
+                    <button type="button" onClick={() => onView?.(booking)} className="btn btn-outline btn-xs">
                       View
                     </button>
                     {canCancel && (
                       <button
                         type="button"
                         onClick={() => onCancel?.(booking)}
-                        className="rounded-lg bg-red-50 px-3 py-1.5 text-xs text-red-600 hover:bg-red-100"
+                        className="btn btn-error btn-soft btn-xs"
                       >
                         Cancel
                       </button>

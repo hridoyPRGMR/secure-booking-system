@@ -14,8 +14,8 @@ export default function RoomGrid({
 }: Props) {
   if (!rooms.length)
     return (
-      <div className="rounded-xl bg-white p-10 text-center shadow">
-        No rooms found.
+      <div className="card bg-base-100 shadow">
+        <div className="card-body items-center py-10 text-center">No rooms found.</div>
       </div>
     );
 

@@ -6,3 +6,9 @@ export interface Location {
   latitude?: number;
   longitude?: number;
 }
+
+export interface LocationOption {
+  city: string;
+  country: string;
+  label: string;
+}

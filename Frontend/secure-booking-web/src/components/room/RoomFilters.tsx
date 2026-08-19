@@ -1,10 +1,12 @@
 import { Search } from "lucide-react";
 import { RoomType } from "../../types/Room";
+import type { LocationOption } from "../../types/Location";
+import LocationSearchSelect from "./LocationSearchSelect";
 
 export interface RoomFilterState {
   search: string;
   type: RoomType | "All";
-  city: string | "All";
+  location: LocationOption | null;
   hotelId: string | "All";
   minCapacity: number | "";
   maxPrice: number | "";
@@ -23,7 +25,6 @@ interface RoomFiltersProps {
   filters: RoomFilterState;
   onChange: (filters: RoomFilterState) => void;
   onReset: () => void;
-  cities: string[];
   hotels: HotelOption[];
 }
 
@@ -39,14 +40,9 @@ export default function RoomFilters({
   filters,
   onChange,
   onReset,
-  cities,
   hotels,
 }: RoomFiltersProps) {
   function update<K extends keyof RoomFilterState>(key: K, value: RoomFilterState[K]) {
-    if (key === "city") {
-      onChange({ ...filters, city: value as RoomFilterState["city"], hotelId: "All" });
-      return;
-    }
     if (key === "checkIn") {
       const checkIn = value as string;
       const checkOut = filters.checkOut && filters.checkOut > checkIn ? filters.checkOut : "";
@@ -56,10 +52,14 @@ export default function RoomFilters({
     onChange({ ...filters, [key]: value });
   }
 
+  function handleLocationChange(location: LocationOption | null) {
+    onChange({ ...filters, location, hotelId: "All" });
+  }
+
   const hasActiveFilters =
     filters.search !== "" ||
     filters.type !== "All" ||
-    filters.city !== "All" ||
+    filters.location !== null ||
     filters.hotelId !== "All" ||
     filters.minCapacity !== "" ||
     filters.maxPrice !== "" ||
@@ -69,57 +69,49 @@ export default function RoomFilters({
 
   const todayIso = new Date().toISOString().slice(0, 10);
 
-  const hotelsInCity =
-    filters.city === "All" ? hotels : hotels.filter((h) => h.city === filters.city);
-
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Filters</h2>
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={onReset}
-            className="text-xs font-medium text-indigo-600 hover:underline"
-          >
-            Clear all
-          </button>
-        )}
-      </div>
+    <div className="card card-border bg-base-100">
+      <div className="card-body gap-5">
+        <div className="flex items-center justify-between">
+          <h2 className="card-title text-base">Filters</h2>
+          {hasActiveFilters && (
+            <button type="button" onClick={onReset} className="btn btn-link btn-xs p-0">
+              Clear all
+            </button>
+          )}
+        </div>
 
-      <div className="mt-4 space-y-5">
-        <div>
-          <label className="text-sm font-medium text-gray-700">Search</label>
-          <div className="relative mt-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Search</legend>
+          <label className="input w-full">
+            <Search size={16} className="opacity-50" />
             <input
               type="text"
               value={filters.search}
               onChange={(e) => update("search", e.target.value)}
               placeholder="Room name…"
-              className="w-full rounded-lg border py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
-        </div>
+          </label>
+        </fieldset>
 
         <div className="grid grid-cols-1 gap-3">
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Check-in <span className="text-red-500">*</span>
-            </label>
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">
+              Check-in <span className="text-error">*</span>
+            </legend>
             <input
               type="date"
               required
               min={todayIso}
               value={filters.checkIn}
               onChange={(e) => update("checkIn", e.target.value)}
-              className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input w-full"
             />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Check-out <span className="text-red-500">*</span>
-            </label>
+          </fieldset>
+          <fieldset className="fieldset p-0">
+            <legend className="fieldset-legend">
+              Check-out <span className="text-error">*</span>
+            </legend>
             <input
               type="date"
               required
@@ -127,54 +119,43 @@ export default function RoomFilters({
               value={filters.checkOut}
               disabled={!filters.checkIn}
               onChange={(e) => update("checkOut", e.target.value)}
-              className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
+              className="input w-full"
             />
-          </div>
+          </fieldset>
         </div>
         {!(filters.checkIn && filters.checkOut) && (
-          <p className="-mt-3 text-xs text-amber-600">
+          <p className="-mt-3 text-xs text-warning">
             Select check-in and check-out dates to search rooms.
           </p>
         )}
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">City</label>
-          <select
-            value={filters.city}
-            onChange={(e) => update("city", e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="All">All cities</option>
-            {cities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-        </div>
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Location</legend>
+          <LocationSearchSelect value={filters.location} onChange={handleLocationChange} />
+        </fieldset>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Hotel</label>
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Hotel</legend>
           <select
             value={filters.hotelId}
             onChange={(e) => update("hotelId", e.target.value)}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="select w-full"
           >
             <option value="All">All hotels</option>
-            {hotelsInCity.map((hotel) => (
+            {hotels.map((hotel) => (
               <option key={hotel.id} value={hotel.id}>
                 {hotel.name}
               </option>
             ))}
           </select>
-        </div>
+        </fieldset>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Room type</label>
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Room type</legend>
           <select
             value={filters.type}
             onChange={(e) => update("type", e.target.value as RoomType | "All")}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="select w-full"
           >
             {ROOM_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -182,10 +163,10 @@ export default function RoomFilters({
               </option>
             ))}
           </select>
-        </div>
+        </fieldset>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Min. capacity</label>
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Min. capacity</legend>
           <input
             type="number"
             min={0}
@@ -194,12 +175,12 @@ export default function RoomFilters({
               update("minCapacity", e.target.value === "" ? "" : Number(e.target.value))
             }
             placeholder="Any"
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="input w-full"
           />
-        </div>
+        </fieldset>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Max. price/night</label>
+        <fieldset className="fieldset p-0">
+          <legend className="fieldset-legend">Max. price/night</legend>
           <input
             type="number"
             min={0}
@@ -208,16 +189,16 @@ export default function RoomFilters({
               update("maxPrice", e.target.value === "" ? "" : Number(e.target.value))
             }
             placeholder="Any"
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="input w-full"
           />
-        </div>
+        </fieldset>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="label gap-2">
           <input
             type="checkbox"
             checked={filters.onlyAvailable}
             onChange={(e) => update("onlyAvailable", e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="checkbox checkbox-sm"
           />
           Only show available rooms
         </label>

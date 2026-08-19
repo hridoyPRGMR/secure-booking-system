@@ -73,16 +73,15 @@ export default function Home() {
           <p className="mt-2 text-gray-500">Reserve your meeting room in seconds.</p>
         </div>
 
-        <Link
-          to="/rooms"
-          className="w-fit rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
-        >
+        <Link to="/rooms" className="btn btn-primary w-fit">
           Book a room
         </Link>
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>
+        <div role="alert" className="alert alert-error">
+          {error}
+        </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -115,7 +114,7 @@ export default function Home() {
       <div>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Upcoming bookings</h2>
-          <Link to="/bookings" className="text-sm font-medium text-indigo-600 hover:underline">
+          <Link to="/bookings" className="link link-primary text-sm font-medium">
             View all
           </Link>
         </div>
@@ -124,8 +123,14 @@ export default function Home() {
           {isLoading && <p className="text-sm text-gray-500">Loading…</p>}
 
           {!isLoading && upcomingBookings.length === 0 && (
-            <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500">
-              No upcoming bookings. <Link to="/rooms" className="text-indigo-600 hover:underline">Book a room</Link> to get started.
+            <div className="card card-border bg-base-100">
+              <div className="card-body items-center text-center text-sm text-base-content/60">
+                No upcoming bookings.{" "}
+                <Link to="/rooms" className="link link-primary">
+                  Book a room
+                </Link>{" "}
+                to get started.
+              </div>
             </div>
           )}
 
@@ -151,19 +156,17 @@ interface DashboardCardProps {
 
 function DashboardCard({ title, value, icon, isLoading }: DashboardCardProps) {
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{title}</p>
-        <span className="text-indigo-500">{icon}</span>
-      </div>
+    <div className="card bg-base-100 shadow-sm">
+      <div className="card-body gap-1 p-6">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-base-content/60">{title}</p>
+          <span className="text-base-content/60">{icon}</span>
+        </div>
 
-      <h2 className="mt-2 text-3xl font-bold">
-        {isLoading ? (
-          <span className="inline-block h-8 w-12 animate-pulse rounded bg-gray-200" />
-        ) : (
-          value
-        )}
-      </h2>
+        <h2 className="text-3xl font-bold">
+          {isLoading ? <span className="skeleton inline-block h-8 w-12" /> : value}
+        </h2>
+      </div>
     </div>
   );
 }

@@ -17,22 +17,32 @@ namespace SecureBooking.Infrastructure.Persistence.Seed;
 public static class LargeDataSeeder
 {
     private const int UserCount = 100_000;
-    private const int LocationCount = 50;
-    private const int HotelCount = 200;
-    private const int RoomCount = 2_000;
-    private const int BookingCount = 50_000;
+    private const int LocationCount = 300;
+    private const int HotelCount = 1_500;
+    private const int RoomCount = 15_000;
+    private const int BookingCount = 400_000;
     private const int BatchSize = 2_000;
 
     // BCrypt hash of "Password123!" - shared by all seeded users, hashed once for speed.
     private const string SeedUserPasswordHash = "$2a$11$ldpMMEtVAv7G.g2PffJeW.wuvYGyiXicfz50lajxDdWEpZaOGJv2u";
 
-    private static readonly string[] Cities =
+    private static readonly (string City, string Country)[] CityCountryPairs =
     [
-        "Dhaka", "Chattogram", "Sylhet", "Cox's Bazar", "Khulna",
-        "Rajshahi", "Barishal", "Rangpur", "Mymensingh", "Comilla"
+        ("Dhaka", "Bangladesh"), ("Chattogram", "Bangladesh"), ("Sylhet", "Bangladesh"),
+        ("Cox's Bazar", "Bangladesh"), ("Khulna", "Bangladesh"), ("Rajshahi", "Bangladesh"),
+        ("Barishal", "Bangladesh"), ("Rangpur", "Bangladesh"), ("Mymensingh", "Bangladesh"),
+        ("Comilla", "Bangladesh"),
+        ("Mumbai", "India"), ("Delhi", "India"), ("Bengaluru", "India"), ("Kolkata", "India"),
+        ("Chennai", "India"), ("Goa", "India"),
+        ("Kathmandu", "Nepal"), ("Pokhara", "Nepal"),
+        ("Colombo", "Sri Lanka"), ("Kandy", "Sri Lanka"),
+        ("Bangkok", "Thailand"), ("Phuket", "Thailand"), ("Chiang Mai", "Thailand"),
+        ("Kuala Lumpur", "Malaysia"), ("Penang", "Malaysia"),
+        ("Singapore", "Singapore"),
+        ("Dubai", "United Arab Emirates"), ("Abu Dhabi", "United Arab Emirates"),
+        ("Doha", "Qatar"),
+        ("Manama", "Bahrain")
     ];
-
-    private static readonly string[] Countries = ["Bangladesh"];
 
     private static readonly string[] HotelAdjectives =
         ["Grand", "Royal", "Ocean View", "Golden", "Sunset", "Palm", "Riverside", "Emerald", "Skyline", "Heritage"];
@@ -68,10 +78,11 @@ public static class LargeDataSeeder
 
         for (var i = 0; i < LocationCount; i++)
         {
+            var (city, country) = CityCountryPairs[i % CityCountryPairs.Length];
             var location = new Location
             {
-                City = Cities[i % Cities.Length],
-                Country = Countries[0],
+                City = city,
+                Country = country,
                 Address = $"{i + 1} Example Street",
                 Latitude = 20 + (i % 10),
                 Longitude = 88 + (i % 10)
@@ -185,19 +196,40 @@ public static class LargeDataSeeder
         var statuses = Enum.GetValues<BookingStatus>();
         var pending = 0;
 
-        for (var i = 0; i < BookingCount; i++)
+        // (RoomId, CheckIn) must be unique per the Bookings index - track combos already
+        // used so we never generate a duplicate that would fail the whole batch on flush.
+        var usedRoomDates = new HashSet<(Guid RoomId, DateTime CheckIn)>(BookingCount);
+        const int dayRangeStart = -60;
+        const int dayRangeSpan = 360;
+
+        var created = 0;
+        while (created < BookingCount)
         {
-            var checkIn = DateTime.UtcNow.Date.AddDays(random.Next(-30, 60));
+            var roomId = roomIds[random.Next(roomIds.Count)];
+
+            DateTime checkIn;
+            var attempts = 0;
+            do
+            {
+                checkIn = DateTime.UtcNow.Date.AddDays(random.Next(dayRangeStart, dayRangeStart + dayRangeSpan));
+                attempts++;
+            } while (!usedRoomDates.Add((roomId, checkIn)) && attempts < 20);
+
+            if (attempts >= 20)
+            {
+                continue; // this room's date range is saturated, try a different room
+            }
 
             context.Bookings.Add(new Booking
             {
                 UserId = userIds[random.Next(userIds.Count)],
-                RoomId = roomIds[random.Next(roomIds.Count)],
+                RoomId = roomId,
                 CheckIn = checkIn,
                 CheckOut = checkIn.AddDays(random.Next(1, 14)),
-                Status = statuses[i % statuses.Length],
+                Status = statuses[created % statuses.Length],
                 Notes = "Example seeded booking for demo/testing purposes."
             });
+            created++;
             pending++;
 
             if (pending == BatchSize)

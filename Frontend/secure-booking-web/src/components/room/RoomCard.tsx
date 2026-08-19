@@ -29,71 +29,56 @@ export default function RoomCard({ room, onView, onBook }: RoomCardProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-lg">
-      <div className="relative h-40 w-full bg-gray-100">
+    <div className="card card-border bg-base-100 transition hover:shadow-lg">
+      <figure className="relative h-40 w-full bg-base-200">
         {room.imageUrl ? (
-          <img
-            src={room.imageUrl}
-            alt={room.name}
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
+          <img src={room.imageUrl} alt={room.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+          <div className="flex h-full w-full items-center justify-center text-sm text-base-content/50">
             No image available
           </div>
         )}
 
-        <span className="absolute right-3 top-3 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-          Available
-        </span>
-      </div>
+        <span className="badge badge-success absolute right-3 top-3">Available</span>
+      </figure>
 
-      <div className="p-5">
+      <div className="card-body">
         {room.hotelName && (
           <button
             type="button"
             onClick={() => navigate(`/hotels/${room.hotelId}`)}
-            className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline"
+            className="btn btn-link btn-xs h-auto min-h-0 justify-start gap-1 p-0 text-xs font-medium"
           >
             <MapPin size={12} />
             {room.hotelName}
           </button>
         )}
 
-        <div className="mt-1 flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-lg font-semibold">{room.name}</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="card-title text-lg">{room.name}</h2>
+            <p className="mt-1 text-sm text-base-content/60">
               {ROOM_TYPE_LABEL[room.type]} · Capacity: {room.capacity}{" "}
               {room.capacity === 1 ? "person" : "people"}
             </p>
           </div>
 
-          <p className="whitespace-nowrap text-lg font-semibold text-indigo-600">
+          <p className="whitespace-nowrap text-lg font-semibold">
             {currencyFormatter.format(room.pricePerNight)}
-            <span className="text-xs font-normal text-gray-500">/night</span>
+            <span className="text-xs font-normal text-base-content/60">/night</span>
           </p>
         </div>
 
-        <p className="mt-4 line-clamp-3 text-sm text-gray-600">
+        <p className="line-clamp-3 text-sm text-base-content/70">
           {room.description || "No description available."}
         </p>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={handleViewDetails}
-            className="rounded-lg border px-4 py-2 hover:bg-gray-100"
-          >
+        <div className="card-actions mt-2 justify-end">
+          <button type="button" onClick={handleViewDetails} className="btn btn-outline">
             Details
           </button>
 
-          <button
-            type="button"
-            onClick={() => onBook?.(room)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-          >
+          <button type="button" onClick={() => onBook?.(room)} className="btn btn-primary">
             Book
           </button>
         </div>

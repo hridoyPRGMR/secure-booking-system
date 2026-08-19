@@ -115,8 +115,10 @@ export default function MyBookings() {
         )}
 
         {!isLoading && !error && filteredBookings.length === 0 && (
-          <div className="rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
-            No bookings found for this filter.
+          <div className="card card-border bg-base-100">
+            <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
+              No bookings found for this filter.
+            </div>
           </div>
         )}
 

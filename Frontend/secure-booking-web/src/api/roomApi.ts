@@ -8,6 +8,7 @@ export interface GetRoomsRequest {
   search?: string;
   hotelId?: string;
   city?: string;
+  country?: string;
   type?: string;
   minCapacity?: number;
   maxPrice?: number;

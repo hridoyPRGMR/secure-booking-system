@@ -6,7 +6,8 @@ export interface GetHotelsRequest {
   page?: number;
   pageSize?: number;
   search?: string;
-  locationId?: string;
+  city?: string;
+  country?: string;
 }
 
 class HotelApi {

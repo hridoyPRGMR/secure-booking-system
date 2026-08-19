@@ -10,5 +10,7 @@ public sealed record ListHotelsQuery(
     string? SortBy = null,
     bool SortDescending = false,
     Guid? LocationId = null,
-    bool? IsActive = null
+    bool? IsActive = null,
+    string? City = null,
+    string? Country = null
 ) : IRequest<PagedResult<HotelResponse>>;

@@ -22,6 +22,12 @@ public sealed class ListRoomsQueryHandler(IApplicationDbContext db)
         if (request.HotelId.HasValue)
             query = query.Where(r => r.HotelId == request.HotelId);
 
+        if (!string.IsNullOrWhiteSpace(request.City))
+            query = query.Where(r => r.Hotel!.Location!.City == request.City);
+
+        if (!string.IsNullOrWhiteSpace(request.Country))
+            query = query.Where(r => r.Hotel!.Location!.Country == request.Country);
+
         if (request.Type.HasValue)
             query = query.Where(r => r.Type == request.Type);
 

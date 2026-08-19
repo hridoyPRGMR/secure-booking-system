@@ -22,11 +22,12 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] string? sortBy = null,
         [FromQuery] bool sortDescending = false,
-        [FromQuery] Guid? locationId = null,
+        [FromQuery] string? city = null,
+        [FromQuery] string? country = null,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new ListHotelsQuery(page, pageSize, search, sortBy, sortDescending, locationId, IsActive: true),
+            new ListHotelsQuery(page, pageSize, search, sortBy, sortDescending, IsActive: true, City: city, Country: country),
             cancellationToken);
         return Ok(result);
     }
@@ -49,10 +50,12 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] RoomType? type = null,
         [FromQuery] DateTime? checkIn = null,
         [FromQuery] DateTime? checkOut = null,
+        [FromQuery] string? city = null,
+        [FromQuery] string? country = null,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true, checkIn, checkOut),
+            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true, checkIn, checkOut, city, country),
             cancellationToken);
         return Ok(result);
     }

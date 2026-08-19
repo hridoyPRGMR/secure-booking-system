@@ -6,6 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/rooms", label: "Rooms" },
+  { to: "/hotels", label: "Hotels" },
   { to: "/bookings", label: "My Bookings" },
 ];
 
@@ -62,7 +63,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 border-b bg-white shadow-sm">
+    <nav className="sticky top-0 z-40 bg-white shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="text-2xl font-bold text-indigo-600">
           BookRoom
