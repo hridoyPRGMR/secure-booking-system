@@ -15,8 +15,11 @@ public sealed class GetHotelByIdQueryHandler(IApplicationDbContext db)
             .AsNoTracking()
             .Where(h => h.Id == request.Id)
             .Select(h => new HotelResponse(
-                h.Id, h.Name, h.Description, h.StarRating, h.ImageUrl, h.IsActive,
-                h.LocationId, h.Location!.City, h.Location.Country, h.Rooms.Count, h.CreatedAt))
+                h.Id, h.Name, h.Description, h.StarRating, h.ReviewScore, h.PropertyType,
+                h.Amenities.ToList(), h.ImageUrl, h.IsActive,
+                h.LocationId, h.Location!.City, h.Location.Country, h.Rooms.Count,
+                h.Rooms.Where(r => r.IsActive).Select(r => (decimal?)r.PricePerNight).Min(),
+                h.CreatedAt))
             .FirstOrDefaultAsync(cancellationToken);
 
         return hotel ?? throw new NotFoundException(nameof(Hotel), request.Id);

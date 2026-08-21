@@ -30,9 +30,14 @@ public sealed class UpdateHotelCommandHandler(
         var location = await db.Locations.FindAsync([request.LocationId], cancellationToken)
             ?? throw new InvalidOperationException("Location vanished after validation.");
         var roomCount = await db.Rooms.CountAsync(r => r.HotelId == hotel.Id, cancellationToken);
+        var minPrice = await db.Rooms
+            .Where(r => r.HotelId == hotel.Id && r.IsActive)
+            .Select(r => (decimal?)r.PricePerNight)
+            .MinAsync(cancellationToken);
 
         return new HotelResponse(
-            hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ImageUrl, hotel.IsActive,
-            hotel.LocationId, location.City, location.Country, roomCount, hotel.CreatedAt);
+            hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ReviewScore, hotel.PropertyType,
+            hotel.Amenities.ToList(), hotel.ImageUrl, hotel.IsActive,
+            hotel.LocationId, location.City, location.Country, roomCount, minPrice, hotel.CreatedAt);
     }
 }

@@ -8,12 +8,27 @@ export interface GetHotelsRequest {
   search?: string;
   city?: string;
   country?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  starRatings?: number[];
+  reviewScoreMin?: number;
+  amenities?: string[];
+  propertyTypes?: string[];
 }
 
 class HotelApi {
   async getHotels(request: GetHotelsRequest): Promise<PagedResult<Hotel>> {
+    const params = {
+      ...request,
+      starRatings: request.starRatings?.length ? request.starRatings.join(",") : undefined,
+      amenities: request.amenities?.length ? request.amenities.join(",") : undefined,
+      propertyTypes: request.propertyTypes?.length ? request.propertyTypes.join(",") : undefined,
+    };
+
     const { data } = await apiClient.get<PagedResult<Hotel>>("/public/hotels", {
-      params: request,
+      params,
     });
 
     return data;

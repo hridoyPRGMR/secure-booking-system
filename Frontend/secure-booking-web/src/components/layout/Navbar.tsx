@@ -5,7 +5,6 @@ import { useAuth } from "../../hooks/useAuth";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/rooms", label: "Rooms" },
   { to: "/hotels", label: "Hotels" },
   { to: "/bookings", label: "My Bookings" },
 ];

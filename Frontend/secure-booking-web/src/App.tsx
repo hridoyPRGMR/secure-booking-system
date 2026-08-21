@@ -2,9 +2,9 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import Layout from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Home from "./pages/Home";
-import Rooms from "./pages/Rooms";
-import RoomDetails from "./components/room/RoomDetails";
 import Hotels from "./components/hotel/Hotels";
+import HotelDetails from "./pages/HotelDetails";
+import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
@@ -24,13 +24,15 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/rooms", element: <Rooms /> },
-      { path: "/rooms/:id", element: <RoomDetails /> },
       { path: "/hotels", element: <Hotels /> },
+      { path: "/hotels/:id", element: <HotelDetails /> },
+
+      { path: "/rooms/*", element: <Navigate to="/hotels" replace /> },
 
       {
         element: <ProtectedRoute />,
         children: [
+          { path: "/checkout", element: <Checkout /> },
           { path: "/bookings", element: <MyBookings /> },
           { path: "/profile", element: <ProfileSettings /> },
         ],

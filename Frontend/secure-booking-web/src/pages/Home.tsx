@@ -73,7 +73,7 @@ export default function Home() {
           <p className="mt-2 text-gray-500">Reserve your meeting room in seconds.</p>
         </div>
 
-        <Link to="/rooms" className="btn btn-primary w-fit">
+        <Link to="/hotels" className="btn btn-primary w-fit">
           Book a room
         </Link>
       </div>
@@ -126,7 +126,7 @@ export default function Home() {
             <div className="card card-border bg-base-100">
               <div className="card-body items-center text-center text-sm text-base-content/60">
                 No upcoming bookings.{" "}
-                <Link to="/rooms" className="link link-primary">
+                <Link to="/hotels" className="link link-primary">
                   Book a room
                 </Link>{" "}
                 to get started.

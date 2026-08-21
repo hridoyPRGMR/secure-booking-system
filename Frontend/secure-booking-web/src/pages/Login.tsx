@@ -13,7 +13,8 @@ export default function Login() {
   const { login } = useAuth()
   const [generalError, setGeneralError] = useState<string | null>(null)
 
-  const from = (location.state as { from?: Location })?.from?.pathname || '/'
+  const from = (location.state as { from?: Location })?.from
+  const navigateTo = from ? `${from.pathname}${from.search || ''}` : '/'
 
   const {
     register,
@@ -32,7 +33,7 @@ export default function Login() {
 
     if (result.success) {
       toast.success('Welcome back!')
-      navigate(from, { replace: true })
+      navigate(navigateTo, { replace: true })
       return
     }
 

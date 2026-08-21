@@ -50,6 +50,9 @@ public static class LargeDataSeeder
     private static readonly string[] HotelNouns =
         ["Hotel", "Resort", "Inn", "Suites", "Palace", "Residency", "Retreat"];
 
+    private static readonly string[] AmenityPool =
+        ["Free WiFi", "Swimming Pool", "Free Breakfast", "Parking", "Spa", "Airport Shuttle"];
+
     public static async Task SeedAsync(ApplicationDbContext context, ILogger logger, CancellationToken cancellationToken = default)
     {
         if (await context.Users.CountAsync(cancellationToken) >= UserCount)
@@ -110,11 +113,21 @@ public static class LargeDataSeeder
 
         for (var i = 0; i < HotelCount; i++)
         {
+            var amenities = new List<string>();
+            foreach (var amenity in AmenityPool)
+            {
+                if (random.NextDouble() < 0.4)
+                    amenities.Add(amenity);
+            }
+
             var hotel = new Hotel
             {
                 Name = $"{HotelAdjectives[i % HotelAdjectives.Length]} {HotelNouns[i % HotelNouns.Length]} {i + 1}",
                 Description = "Example seeded hotel for demo/testing purposes.",
                 StarRating = random.Next(1, 6),
+                ReviewScore = Math.Round(6 + random.NextDouble() * 3.5, 1),
+                PropertyType = (PropertyType)(i % 4),
+                Amenities = amenities,
                 IsActive = true,
                 LocationId = locationIds[i % locationIds.Count]
             };

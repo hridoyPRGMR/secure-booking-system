@@ -29,7 +29,8 @@ public sealed class CreateHotelCommandHandler(
             ?? throw new InvalidOperationException("Location vanished after validation.");
 
         return new HotelResponse(
-            hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ImageUrl, hotel.IsActive,
-            hotel.LocationId, location.City, location.Country, 0, hotel.CreatedAt);
+            hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ReviewScore, hotel.PropertyType,
+            hotel.Amenities.ToList(), hotel.ImageUrl, hotel.IsActive,
+            hotel.LocationId, location.City, location.Country, 0, null, hotel.CreatedAt);
     }
 }

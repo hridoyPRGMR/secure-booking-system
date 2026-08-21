@@ -64,3 +64,4 @@ dist
 .vs
 .vscode
 .claude/skills/daisyui
+.agents/skills/daisyui

@@ -7,6 +7,16 @@ interface HotelCardProps {
   roomCount?: number;
 }
 
+const currency = (value: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+
+function reviewBadgeColor(score: number): string {
+  if (score >= 9) return "bg-emerald-600";
+  if (score >= 8) return "bg-green-600";
+  if (score >= 7) return "bg-lime-600";
+  return "bg-amber-600";
+}
+
 export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
   const navigate = useNavigate();
 
@@ -21,6 +31,11 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
           </div>
         )}
 
+        {hotel.reviewScore > 0 && (
+          <span className={`badge absolute right-3 top-3 border-0 text-white ${reviewBadgeColor(hotel.reviewScore)}`}>
+            {hotel.reviewScore.toFixed(1)}
+          </span>
+        )}
         {!hotel.isActive && (
           <span className="badge badge-neutral absolute right-3 top-3">Currently closed</span>
         )}
@@ -44,15 +59,36 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
           {hotel.description || "No description available."}
         </p>
 
+        {hotel.amenities.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {hotel.amenities.slice(0, 3).map((amenity) => (
+              <span key={amenity} className="badge badge-ghost badge-sm font-normal">
+                {amenity}
+              </span>
+            ))}
+            {hotel.amenities.length > 3 && (
+              <span className="badge badge-ghost badge-sm">+{hotel.amenities.length - 3}</span>
+            )}
+          </div>
+        )}
+
         <div className="card-actions mt-2 items-center justify-between">
-          {roomCount !== undefined && (
-            <span className="text-xs text-base-content/60">
-              {roomCount} room{roomCount !== 1 ? "s" : ""} available
-            </span>
-          )}
+          <div className="flex flex-col">
+            {hotel.minPricePerNight != null && (
+              <span className="text-sm font-semibold">
+                {currency(hotel.minPricePerNight)}
+                <span className="text-xs font-normal text-base-content/60">/night</span>
+              </span>
+            )}
+            {roomCount !== undefined && (
+              <span className="text-xs text-base-content/60">
+                {roomCount} room{roomCount !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
 
           <button type="button" onClick={() => navigate(`/hotels/${hotel.id}`)} className="btn btn-primary btn-sm">
-            View rooms
+            View details
           </button>
         </div>
       </div>

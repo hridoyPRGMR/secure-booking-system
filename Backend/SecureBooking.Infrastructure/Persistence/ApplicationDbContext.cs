@@ -131,6 +131,9 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
         {
             b.HasKey(h => h.Id);
             b.Property(h => h.Name).IsRequired().HasMaxLength(200);
+            b.Property(h => h.ReviewScore).HasPrecision(3, 1);
+            b.Property(h => h.PropertyType).HasConversion<int>();
+            b.Property(h => h.Amenities).HasColumnType("text[]");
 
             b.HasOne(h => h.Location)
                 .WithMany(l => l.Hotels)

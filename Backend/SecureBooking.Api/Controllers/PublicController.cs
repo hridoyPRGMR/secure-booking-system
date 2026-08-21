@@ -24,12 +24,49 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] bool sortDescending = false,
         [FromQuery] string? city = null,
         [FromQuery] string? country = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] string? starRatings = null,
+        [FromQuery] double? reviewScoreMin = null,
+        [FromQuery] string? amenities = null,
+        [FromQuery] string? propertyTypes = null,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new ListHotelsQuery(page, pageSize, search, sortBy, sortDescending, IsActive: true, City: city, Country: country),
+            new ListHotelsQuery(
+                page, pageSize, search, sortBy, sortDescending,
+                LocationId: null, IsActive: true, City: city, Country: country,
+                MinPrice: minPrice, MaxPrice: maxPrice,
+                StarRatings: ParseInts(starRatings), ReviewScoreMin: reviewScoreMin,
+                Amenities: ParseList(amenities), PropertyTypes: ParseEnums<PropertyType>(propertyTypes)),
             cancellationToken);
         return Ok(result);
+    }
+
+    private static List<int> ParseInts(string? csv) =>
+        string.IsNullOrWhiteSpace(csv)
+            ? []
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(v => int.TryParse(v, out var n) ? n : (int?)null)
+                .Where(v => v.HasValue)
+                .Select(v => v!.Value)
+                .ToList();
+
+    private static List<string> ParseList(string? csv) =>
+        string.IsNullOrWhiteSpace(csv)
+            ? []
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+    private static List<T> ParseEnums<T>(string? csv) where T : struct, Enum
+    {
+        if (string.IsNullOrWhiteSpace(csv))
+            return [];
+
+        return csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(v => Enum.TryParse<T>(v, ignoreCase: true, out var e) ? e : (T?)null)
+            .Where(v => v.HasValue)
+            .Select(v => v!.Value)
+            .ToList();
     }
 
     [HttpGet("hotels/{id:guid}")]
