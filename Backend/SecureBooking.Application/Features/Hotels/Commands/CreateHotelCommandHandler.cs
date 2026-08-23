@@ -31,6 +31,6 @@ public sealed class CreateHotelCommandHandler(
         return new HotelResponse(
             hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ReviewScore, hotel.PropertyType,
             hotel.Amenities.ToList(), hotel.ImageUrl, hotel.IsActive,
-            hotel.LocationId, location.City, location.Country, 0, null, hotel.CreatedAt);
+            hotel.LocationId, location.City, location.Country, 0, 0, null, hotel.CreatedAt);
     }
 }

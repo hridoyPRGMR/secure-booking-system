@@ -145,6 +145,9 @@ export function filtersToApi(filters: HotelFilterState): GetHotelsRequest {
 
   if (filters.minPrice !== "") api.minPrice = filters.minPrice;
   if (filters.maxPrice !== "") api.maxPrice = filters.maxPrice;
+  api.adults = filters.adults;
+  api.children = filters.children;
+  api.rooms = filters.rooms;
   if (filters.starRatings.length) api.starRatings = filters.starRatings;
 
   if (filters.reviewLevels.length) {
@@ -159,6 +162,8 @@ export function filtersToApi(filters: HotelFilterState): GetHotelsRequest {
 
   api.sortBy = SORT_API[filters.sort].sortBy;
   api.sortDescending = SORT_API[filters.sort].sortDescending;
+  api.checkIn = filters.checkIn ? new Date(filters.checkIn) : undefined;
+  api.checkOut = filters.checkOut ? new Date(filters.checkOut) : undefined;
 
   return api;
 }

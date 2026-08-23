@@ -6,4 +6,5 @@
     <Project Path="SecureBooking.Application/SecureBooking.Application.csproj" />
     <Project Path="SecureBooking.Infrastructure/SecureBooking.Infrastructure.csproj" />
   </Folder>
+  <Project Path="SecureBooking.LoadTests/SecureBooking.LoadTests.csproj" />
 </Solution>

@@ -19,6 +19,7 @@ export interface Hotel {
   locationCity: string;
   locationCountry: string;
   roomCount: number;
+  availableRoomCount: number;
   minPricePerNight?: number;
   createdAt: string;
 }

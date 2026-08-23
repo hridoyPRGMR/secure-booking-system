@@ -7,6 +7,7 @@ interface HotelSearchBarProps {
   filters: HotelFilterState;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
+  onSubmitSearch: () => void;
   onLocationSelect: (city: string, country: string) => void;
   onDatesChange: (checkIn: string, checkOut: string) => void;
   onGuestsChange: (adults: number, children: number, rooms: number) => void;
@@ -16,6 +17,7 @@ export default function HotelSearchBar({
   filters,
   searchInput,
   onSearchInputChange,
+  onSubmitSearch,
   onLocationSelect,
   onDatesChange,
   onGuestsChange,
@@ -24,14 +26,20 @@ export default function HotelSearchBar({
     <div className="card card-border bg-base-100">
       <div className="card-body p-4">
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr]">
-          <div className="space-y-1">
+          <form
+            className="space-y-1"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmitSearch();
+            }}
+          >
             <span className="text-xs text-base-content/60">Destination</span>
             <LocationSearchInput
               value={searchInput}
               onChange={onSearchInputChange}
               onSelect={onLocationSelect}
             />
-          </div>
+          </form>
 
           <DateRangePicker
             checkIn={filters.checkIn}

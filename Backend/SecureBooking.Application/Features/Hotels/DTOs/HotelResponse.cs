@@ -16,6 +16,7 @@ public sealed record HotelResponse(
     string LocationCity,
     string LocationCountry,
     int RoomCount,
+    int? AvailableRoomCount,
     decimal? MinPricePerNight,
     DateTime CreatedAt
 );

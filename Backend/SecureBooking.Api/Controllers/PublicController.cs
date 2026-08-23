@@ -24,8 +24,13 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] bool sortDescending = false,
         [FromQuery] string? city = null,
         [FromQuery] string? country = null,
+        [FromQuery] DateTime ? checkIn = null,
+        [FromQuery] DateTime ? checkOut = null,
         [FromQuery] decimal? minPrice = null,
         [FromQuery] decimal? maxPrice = null,
+        [FromQuery] int? adults = null,
+        [FromQuery] int? children = null,
+        [FromQuery] int? rooms = null,
         [FromQuery] string? starRatings = null,
         [FromQuery] double? reviewScoreMin = null,
         [FromQuery] string? amenities = null,
@@ -36,7 +41,9 @@ public class PublicController(IMediator mediator) : ControllerBase
             new ListHotelsQuery(
                 page, pageSize, search, sortBy, sortDescending,
                 LocationId: null, IsActive: true, City: city, Country: country,
+                CheckIn: checkIn, CheckOut: checkOut,
                 MinPrice: minPrice, MaxPrice: maxPrice,
+                Adults: adults, Children: children, Rooms: rooms,
                 StarRatings: ParseInts(starRatings), ReviewScoreMin: reviewScoreMin,
                 Amenities: ParseList(amenities), PropertyTypes: ParseEnums<PropertyType>(propertyTypes)),
             cancellationToken);

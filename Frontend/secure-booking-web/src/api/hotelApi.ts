@@ -8,10 +8,15 @@ export interface GetHotelsRequest {
   search?: string;
   city?: string;
   country?: string;
+  checkIn?: Date;
+  checkOut?: Date;
   sortBy?: string;
   sortDescending?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  adults?: number;
+  children?: number;
+  rooms?: number;
   starRatings?: number[];
   reviewScoreMin?: number;
   amenities?: string[];

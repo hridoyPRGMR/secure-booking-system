@@ -71,6 +71,7 @@ export default function Hotels() {
         filters={filters}
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
+        onSubmitSearch={hook.submitSearch}
         onLocationSelect={(city, country) => {
           update("city", city);
           update("country", country);

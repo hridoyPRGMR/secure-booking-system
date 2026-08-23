@@ -38,6 +38,6 @@ public sealed class UpdateHotelCommandHandler(
         return new HotelResponse(
             hotel.Id, hotel.Name, hotel.Description, hotel.StarRating, hotel.ReviewScore, hotel.PropertyType,
             hotel.Amenities.ToList(), hotel.ImageUrl, hotel.IsActive,
-            hotel.LocationId, location.City, location.Country, roomCount, minPrice, hotel.CreatedAt);
+            hotel.LocationId, location.City, location.Country, roomCount, 0, minPrice, hotel.CreatedAt);
     }
 }

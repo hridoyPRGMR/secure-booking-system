@@ -80,9 +80,9 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
                 <span className="text-xs font-normal text-base-content/60">/night</span>
               </span>
             )}
-            {roomCount !== undefined && (
+            {hotel.availableRoomCount !== undefined && (
               <span className="text-xs text-base-content/60">
-                {roomCount} room{roomCount !== 1 ? "s" : ""}
+                {hotel.availableRoomCount} room{hotel.availableRoomCount !== 1 ? "s" : ""} available
               </span>
             )}
           </div>

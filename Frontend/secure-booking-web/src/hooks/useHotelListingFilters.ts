@@ -30,14 +30,15 @@ export function useHotelListingFilters() {
   }, [filters, setSearchParams]);
 
   useEffect(() => {
-    const t = setTimeout(() => setFilters((f) => ({ ...f, search: searchInput })), DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [searchInput]);
-
-  useEffect(() => {
     const t = setTimeout(() => setFilters((f) => ({ ...f, minPrice: minPriceInput })), DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [minPriceInput]);
+
+  // Search text is committed to `filters` (and thus the API call) only on
+  // explicit submit (Enter key), never while typing.
+  function submitSearch() {
+    setFilters((f) => ({ ...f, search: searchInput.trim() }));
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setFilters((f) => ({ ...f, maxPrice: maxPriceInput })), DEBOUNCE_MS);
@@ -117,6 +118,7 @@ export function useHotelListingFilters() {
     resetSidebar,
     searchInput,
     setSearchInput,
+    submitSearch,
     minPriceInput,
     setMinPriceInput,
     maxPriceInput,

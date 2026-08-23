@@ -18,6 +18,7 @@ public sealed class GetHotelByIdQueryHandler(IApplicationDbContext db)
                 h.Id, h.Name, h.Description, h.StarRating, h.ReviewScore, h.PropertyType,
                 h.Amenities.ToList(), h.ImageUrl, h.IsActive,
                 h.LocationId, h.Location!.City, h.Location.Country, h.Rooms.Count,
+                0,
                 h.Rooms.Where(r => r.IsActive).Select(r => (decimal?)r.PricePerNight).Min(),
                 h.CreatedAt))
             .FirstOrDefaultAsync(cancellationToken);

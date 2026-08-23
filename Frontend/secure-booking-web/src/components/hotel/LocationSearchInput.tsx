@@ -26,7 +26,7 @@ export default function LocationSearchInput({
   }, [value]);
 
   useEffect(() => {
-    const handle = setTimeout(() => setDebounced(query.trim()), 300);
+    const handle = setTimeout(() => setDebounced(query.trim()), 500);
     return () => clearTimeout(handle);
   }, [query]);
 
