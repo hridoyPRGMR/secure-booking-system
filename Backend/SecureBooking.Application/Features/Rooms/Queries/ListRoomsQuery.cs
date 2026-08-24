@@ -16,6 +16,8 @@ public sealed record ListRoomsQuery(
     bool? IsActive = null,
     DateTime? CheckIn = null,
     DateTime? CheckOut = null,
+    int? MinCapacity = null,
+    bool OnlyAvailable = false,
     string? City = null,
     string? Country = null
 ) : IRequest<PagedResult<RoomResponse>>;

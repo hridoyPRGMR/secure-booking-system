@@ -94,12 +94,15 @@ public class PublicController(IMediator mediator) : ControllerBase
         [FromQuery] RoomType? type = null,
         [FromQuery] DateTime? checkIn = null,
         [FromQuery] DateTime? checkOut = null,
+        [FromQuery] int? minCapacity = null,
+        [FromQuery] bool onlyAvailable = false,
         [FromQuery] string? city = null,
         [FromQuery] string? country = null,
         CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
-            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true, checkIn, checkOut, city, country),
+            new ListRoomsQuery(page, pageSize, search, sortBy, sortDescending, hotelId, type, IsActive: true,
+                checkIn, checkOut, MinCapacity: minCapacity, OnlyAvailable: onlyAvailable, city, country),
             cancellationToken);
         return Ok(result);
     }

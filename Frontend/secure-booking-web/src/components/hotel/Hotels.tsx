@@ -155,7 +155,16 @@ export default function Hotels() {
                   className={`grid gap-6 md:grid-cols-2 xl:grid-cols-3 ${isFetching ? "opacity-60 transition-opacity" : ""}`}
                 >
                   {hotels.map((hotel) => (
-                    <HotelCard key={hotel.id} hotel={hotel} roomCount={hotel.roomCount} />
+                    <HotelCard
+                      key={hotel.id}
+                      hotel={hotel}
+                      roomCount={hotel.roomCount}
+                      checkIn={filters.checkIn || undefined}
+                      checkOut={filters.checkOut || undefined}
+                      adults={filters.adults}
+                      children={filters.children}
+                      rooms={filters.rooms}
+                    />
                   ))}
                 </div>
                 {isFetching && (

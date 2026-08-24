@@ -1,10 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { MapPin, Star } from "lucide-react";
 import type { Hotel } from "../../types/Hotel";
+import { hotelFallbackImage } from "../../lib/fallbackImages";
 
 interface HotelCardProps {
   hotel: Hotel;
   roomCount?: number;
+  checkIn?: string;
+  checkOut?: string;
+  adults?: number;
+  children?: number;
+  rooms?: number;
 }
 
 const currency = (value: number) =>
@@ -17,8 +23,27 @@ function reviewBadgeColor(score: number): string {
   return "bg-amber-600";
 }
 
-export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
+export default function HotelCard({
+  hotel,
+  roomCount,
+  checkIn,
+  checkOut,
+  adults,
+  children,
+  rooms,
+}: HotelCardProps) {
   const navigate = useNavigate();
+
+  const detailsUrl = () => {
+    const params = new URLSearchParams();
+    if (checkIn) params.set("checkIn", checkIn);
+    if (checkOut) params.set("checkOut", checkOut);
+    if (adults !== undefined) params.set("adults", String(adults));
+    if (children !== undefined) params.set("children", String(children));
+    if (rooms !== undefined) params.set("rooms", String(rooms));
+    const qs = params.toString();
+    return qs ? `/hotels/${hotel.id}?${qs}` : `/hotels/${hotel.id}`;
+  };
 
   return (
     <div className="card card-border bg-base-100 transition hover:shadow-lg">
@@ -26,9 +51,12 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
         {hotel.imageUrl ? (
           <img src={hotel.imageUrl} alt={hotel.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-base-content/50">
-            No image available
-          </div>
+          <img
+            src={hotelFallbackImage(hotel.id)}
+            alt={hotel.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
         )}
 
         {hotel.reviewScore > 0 && (
@@ -87,7 +115,7 @@ export default function HotelCard({ hotel, roomCount }: HotelCardProps) {
             )}
           </div>
 
-          <button type="button" onClick={() => navigate(`/hotels/${hotel.id}`)} className="btn btn-primary btn-sm">
+          <button type="button" onClick={() => navigate(detailsUrl())} className="btn btn-primary btn-sm">
             View details
           </button>
         </div>

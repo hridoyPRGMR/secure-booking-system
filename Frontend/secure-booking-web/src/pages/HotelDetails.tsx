@@ -1,9 +1,51 @@
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { MapPin, Star, Users, BedDouble } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { hotelApi } from "../api/hotelApi";
 import { roomApi } from "../api/roomApi";
 import type { Room } from "../types/Room";
+import DateRangePicker from "../components/hotel/DateRangePicker";
+import GuestsRoomsSelect from "../components/hotel/GuestsRoomsSelect";
+import { hotelFallbackImage, roomFallbackImage } from "../lib/fallbackImages";
+
+interface AvailabilityFilters {
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  rooms: number;
+}
+
+const DEFAULT_AVAILABILITY: AvailabilityFilters = {
+  checkIn: "",
+  checkOut: "",
+  adults: 2,
+  children: 0,
+  rooms: 1,
+};
+
+function parseAvailability(params: URLSearchParams): AvailabilityFilters {
+  return {
+    checkIn: params.get("checkIn") ?? DEFAULT_AVAILABILITY.checkIn,
+    checkOut: params.get("checkOut") ?? DEFAULT_AVAILABILITY.checkOut,
+    adults:
+      parseInt(params.get("adults") ?? "", 10) || DEFAULT_AVAILABILITY.adults,
+    children:
+      parseInt(params.get("children") ?? "", 10) || DEFAULT_AVAILABILITY.children,
+    rooms: parseInt(params.get("rooms") ?? "", 10) || DEFAULT_AVAILABILITY.rooms,
+  };
+}
+
+function availabilityToUrl(a: AvailabilityFilters): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (a.checkIn) out.checkIn = a.checkIn;
+  if (a.checkOut) out.checkOut = a.checkOut;
+  if (a.adults !== DEFAULT_AVAILABILITY.adults) out.adults = String(a.adults);
+  if (a.children !== DEFAULT_AVAILABILITY.children) out.children = String(a.children);
+  if (a.rooms !== DEFAULT_AVAILABILITY.rooms) out.rooms = String(a.rooms);
+  return out;
+}
 
 const ROOM_TYPE_LABEL: Record<Room["type"], string> = {
   Standard: "Standard",
@@ -20,6 +62,31 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 export default function HotelDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [availability, setAvailability] = useState<AvailabilityFilters>(() =>
+    parseAvailability(searchParams)
+  );
+
+  function updateAvailability(patch: Partial<AvailabilityFilters>) {
+    const next = { ...availability, ...patch };
+    if (next.checkIn && next.checkOut && next.checkOut <= next.checkIn) {
+      next.checkOut = "";
+    }
+    setAvailability(next);
+    setSearchParams(availabilityToUrl(next), { replace: true });
+  }
+
+  const hasDates = Boolean(availability.checkIn && availability.checkOut);
+  const guests = availability.adults + availability.children;
+
+  const nights = (() => {
+    if (!hasDates) return 0;
+    const diff =
+      new Date(availability.checkOut).getTime() -
+      new Date(availability.checkIn).getTime();
+    return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+  })();
 
   const {
     data: hotel,
@@ -36,8 +103,17 @@ export default function HotelDetails() {
     isLoading: roomsLoading,
     error: roomsError,
   } = useQuery({
-    queryKey: ["rooms", "hotel", id],
-    queryFn: () => roomApi.getRooms({ hotelId: id, page: 1, pageSize: 100 }),
+    queryKey: ["rooms", "hotel", id, availability],
+    queryFn: () =>
+      roomApi.getRooms({
+        hotelId: id,
+        page: 1,
+        pageSize: 100,
+        minCapacity: guests || undefined,
+        onlyAvailable: hasDates || undefined,
+        checkIn: availability.checkIn || undefined,
+        checkOut: availability.checkOut || undefined,
+      }),
     enabled: !!id,
   });
 
@@ -97,9 +173,12 @@ export default function HotelDetails() {
             className="h-72 w-full object-cover"
           />
         ) : (
-          <div className="flex h-72 w-full items-center justify-center text-sm text-base-content/50">
-            No image available
-          </div>
+          <img
+            src={hotelFallbackImage(hotel.id)}
+            alt={hotel.name}
+            loading="lazy"
+            className="h-72 w-full object-cover"
+          />
         )}
 
         {!hotel.isActive && (
@@ -147,10 +226,56 @@ export default function HotelDetails() {
           <h2 className="text-xl font-semibold">Rooms &amp; availability</h2>
         </div>
 
-        {rooms.length === 0 ? (
+        {/* Check availability filters */}
+        <div className="card card-border bg-base-100 mt-4">
+          <div className="card-body gap-4 p-4">
+            <div className="grid items-start gap-4 sm:grid-cols-2">
+              <DateRangePicker
+                checkIn={availability.checkIn}
+                checkOut={availability.checkOut}
+                onChange={(checkIn, checkOut) => updateAvailability({ checkIn, checkOut })}
+              />
+
+              <div className="space-y-1">
+                <span className="text-xs text-base-content/60">Guests &amp; rooms</span>
+                <GuestsRoomsSelect
+                  adults={availability.adults}
+                  children={availability.children}
+                  rooms={availability.rooms}
+                  onChange={(adults, children, rooms) =>
+                    updateAvailability({ adults, children, rooms })
+                  }
+                />
+              </div>
+            </div>
+
+            <p className="text-sm text-base-content/60">
+              {hasDates ? (
+                <>
+                  {nights} night{nights !== 1 ? "s" : ""}, {guests} guest{guests !== 1 ? "s" : ""},
+                  {" "}
+                  {availability.rooms} room{availability.rooms !== 1 ? "s" : ""} — showing rooms that
+                  sleep {guests}+ and are free for your dates.
+                </>
+              ) : (
+                <>Select your dates and guests to check availability.</>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {roomsLoading ? (
+          <div className="mt-4 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="skeleton h-64" />
+            <div className="skeleton h-64" />
+            <div className="skeleton h-64" />
+          </div>
+        ) : rooms.length === 0 ? (
           <div className="card card-dash bg-base-200">
             <div className="card-body items-center py-10 text-center text-sm text-base-content/60">
-              No rooms are currently available at this property.
+              {hasDates
+                ? "No rooms are available for your selected dates and guests."
+                : "No rooms are currently available at this property."}
             </div>
           </div>
         ) : (
@@ -181,9 +306,12 @@ function RoomCard({ room, onBook }: RoomCardProps) {
         {room.imageUrl ? (
           <img src={room.imageUrl} alt={room.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-base-content/50">
-            No image available
-          </div>
+          <img
+            src={roomFallbackImage(room.id)}
+            alt={room.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
         )}
 
         <span className={`badge absolute right-3 top-3 ${room.isActive ? "badge-success" : "badge-neutral"}`}>

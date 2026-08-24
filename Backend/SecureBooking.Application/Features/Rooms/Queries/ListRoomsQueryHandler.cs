@@ -31,6 +31,12 @@ public sealed class ListRoomsQueryHandler(IApplicationDbContext db)
         if (request.Type.HasValue)
             query = query.Where(r => r.Type == request.Type);
 
+        if (request.MinCapacity.HasValue)
+            query = query.Where(r => r.Capacity >= request.MinCapacity.Value);
+
+        // Availability: when a date range is supplied, exclude rooms whose bookings overlap it
+        // (half-open interval [checkIn, checkOut)). When OnlyAvailable is requested without dates,
+        // fall back to excluding rooms with any non-cancelled booking that has not ended yet.
         if (request.CheckIn.HasValue && request.CheckOut.HasValue)
         {
             var checkIn = DateTime.SpecifyKind(request.CheckIn.Value, DateTimeKind.Utc);
@@ -41,10 +47,18 @@ public sealed class ListRoomsQueryHandler(IApplicationDbContext db)
                 b.CheckIn < checkOut &&
                 checkIn < b.CheckOut));
         }
+        else if (request.OnlyAvailable)
+        {
+            var now = DateTime.UtcNow;
+
+            query = query.Where(r => !r.Bookings.Any(b =>
+                b.Status != Shared.Enums.BookingStatus.Cancelled &&
+                b.CheckOut > now));
+        }
 
         query = request.SortBy?.ToLowerInvariant() switch
         {
-            "priceperright" or "priceppernight" => request.SortDescending ? query.OrderByDescending(r => r.PricePerNight) : query.OrderBy(r => r.PricePerNight),
+            "pricepernight" or "price" => request.SortDescending ? query.OrderByDescending(r => r.PricePerNight) : query.OrderBy(r => r.PricePerNight),
             "capacity" => request.SortDescending ? query.OrderByDescending(r => r.Capacity) : query.OrderBy(r => r.Capacity),
             "createdat" => request.SortDescending ? query.OrderByDescending(r => r.CreatedAt) : query.OrderBy(r => r.CreatedAt),
             _ => request.SortDescending ? query.OrderByDescending(r => r.Name) : query.OrderBy(r => r.Name),

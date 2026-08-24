@@ -9,6 +9,7 @@ import { hotelApi } from "../api/hotelApi";
 import { bookingApi } from "../api/bookingApi";
 import BookingForm from "../components/booking/BookingForm";
 import type { CreateBookingRequest } from "../types/Booking";
+import { roomFallbackImage } from "../lib/fallbackImages";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -158,9 +159,12 @@ export default function Checkout() {
               {room.imageUrl ? (
                 <img src={room.imageUrl} alt={room.name} loading="lazy" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-base-content/50">
-                  No image available
-                </div>
+                <img
+                  src={roomFallbackImage(room.id)}
+                  alt={room.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               )}
             </figure>
 
