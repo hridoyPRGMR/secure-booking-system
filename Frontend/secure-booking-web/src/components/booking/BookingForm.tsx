@@ -6,6 +6,8 @@ interface BookingFormProps {
   room: Room;
   onSubmit: (data: CreateBookingRequest) => void | Promise<void>;
   isSubmitting?: boolean;
+  initialCheckIn?: string;
+  initialCheckOut?: string;
 }
 
 interface FormErrors {
@@ -22,11 +24,19 @@ function nightsBetween(checkIn: string, checkOut: string): number {
   return Math.max(0, Math.round(ms / (1000 * 60 * 60 * 24)));
 }
 
-export default function BookingForm({ room, onSubmit, isSubmitting }: BookingFormProps) {
+export default function BookingForm({
+  room,
+  onSubmit,
+  isSubmitting,
+  initialCheckIn,
+  initialCheckOut,
+}: BookingFormProps) {
   const today = toDateInputValue(new Date());
 
-  const [checkIn, setCheckIn] = useState(today);
-  const [checkOut, setCheckOut] = useState("");
+  const [checkIn, setCheckIn] = useState(initialCheckIn || today);
+  const [checkOut, setCheckOut] = useState(() =>
+    initialCheckOut && (!initialCheckIn || initialCheckOut > initialCheckIn) ? initialCheckOut : ""
+  );
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
 

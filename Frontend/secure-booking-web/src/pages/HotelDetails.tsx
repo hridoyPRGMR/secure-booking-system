@@ -284,7 +284,15 @@ export default function HotelDetails() {
               <RoomCard
                 key={room.id}
                 room={room}
-                onBook={() => navigate(`/checkout?hotelId=${hotel.id}&roomId=${room.id}`)}
+                onBook={() => {
+                  const params = new URLSearchParams({
+                    hotelId: hotel.id,
+                    roomId: room.id,
+                  });
+                  if (availability.checkIn) params.set("checkIn", availability.checkIn);
+                  if (availability.checkOut) params.set("checkOut", availability.checkOut);
+                  navigate(`/checkout?${params.toString()}`);
+                }}
               />
             ))}
           </div>

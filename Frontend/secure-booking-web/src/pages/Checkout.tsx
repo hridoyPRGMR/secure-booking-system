@@ -30,6 +30,13 @@ export default function Checkout() {
 
   const hotelId = searchParams.get("hotelId");
   const roomId = searchParams.get("roomId");
+  const checkIn = searchParams.get("checkIn") ?? undefined;
+  const checkOut = searchParams.get("checkOut") ?? undefined;
+
+  const hasStay = Boolean(checkIn && checkOut && checkOut > checkIn);
+  const nights = hasStay
+    ? Math.max(0, Math.round((new Date(checkOut!).getTime() - new Date(checkIn!).getTime()) / 86400000))
+    : 0;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -143,7 +150,13 @@ export default function Checkout() {
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         {/* Booking form */}
         <div className="min-w-0">
-          <BookingForm room={room} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+          <BookingForm
+            room={room}
+            initialCheckIn={checkIn}
+            initialCheckOut={checkOut}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
 
           {submitError && (
             <div role="alert" className="alert alert-error mt-4 text-sm">
@@ -186,6 +199,20 @@ export default function Checkout() {
                 <Users size={14} />
                 Sleeps up to {room.capacity} {room.capacity === 1 ? "person" : "people"}
               </p>
+
+              {hasStay && (
+                <div className="rounded-box bg-base-200 p-3 text-sm">
+                  <p className="font-medium">
+                    {nights} night{nights !== 1 ? "s" : ""} · {checkIn} → {checkOut}
+                  </p>
+                  <p className="mt-1 flex justify-between text-base-content/70">
+                    <span>
+                      {currencyFormatter.format(room.pricePerNight)} × {nights}
+                    </span>
+                    <span className="font-semibold">{currencyFormatter.format(room.pricePerNight * nights)}</span>
+                  </p>
+                </div>
+              )}
 
               <p className="text-sm text-base-content/60">Room type</p>
               <p className="text-sm font-medium">{ROOM_TYPE_LABEL[room.type] ?? room.type}</p>
