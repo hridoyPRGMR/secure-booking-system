@@ -53,13 +53,32 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-if (app.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment()))
+var migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", true);
+var seedEnabled = app.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment());
+
+var adminSeedConfigured = !string.IsNullOrWhiteSpace(app.Configuration["AdminSeed:Email"]);
+
+if (migrateOnStartup || seedEnabled || adminSeedConfigured)
 {
-    using var seedScope = app.Services.CreateScope();
-    var dbContext = seedScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var seedLogger = seedScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    await dbContext.Database.MigrateAsync();
-    await LargeDataSeeder.SeedAsync(dbContext, seedLogger);
+    using var startupScope = app.Services.CreateScope();
+    var dbContext = startupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    if (migrateOnStartup)
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+
+    var seedLogger = startupScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    if (adminSeedConfigured)
+    {
+        await AdminSeeder.SeedAsync(dbContext, app.Configuration, seedLogger);
+    }
+
+    if (seedEnabled)
+    {
+        await LargeDataSeeder.SeedAsync(dbContext, seedLogger);
+    }
 }
 
 app.UseExceptionHandler();

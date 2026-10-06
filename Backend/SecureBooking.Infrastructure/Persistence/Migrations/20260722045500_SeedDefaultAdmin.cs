@@ -11,23 +11,12 @@ namespace SecureBooking.Infrastructure.Persistence.Migrations
         private static readonly Guid DefaultAdminUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         private static readonly Guid AdministratorRoleId = Guid.Parse("99999999-9999-9999-9999-999999999999");
 
-        // BCrypt hash of "Admin123!" — change this password immediately after first login.
-        private const string DefaultAdminPasswordHash = "$2a$12$MOmBttqOxAyAQ5t.hxSnS.8a65cWhI3br9tUuPohVvhGBgE/Xdda6";
-
+        // No longer inserts a default admin (it shipped a well-known password).
+        // The initial admin is now created from configuration by AdminSeeder.
+        // Databases that already applied this migration keep their existing row.
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            var now = new DateTime(2026, 7, 22, 0, 0, 0, DateTimeKind.Utc);
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "FirstName", "LastName", "Email", "PasswordHash", "IsActive", "RefreshTokenHash", "RefreshTokenExpiry", "CreatedAt", "UpdatedAt" },
-                values: new object[] { DefaultAdminUserId, "Default", "Admin", "admin@gmail.com", DefaultAdminPasswordHash, true, null, null, now, now });
-
-            migrationBuilder.InsertData(
-                table: "UserRoles",
-                columns: new[] { "UserId", "RoleId" },
-                values: new object[] { DefaultAdminUserId, AdministratorRoleId });
         }
 
         /// <inheritdoc />
