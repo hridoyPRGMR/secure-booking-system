@@ -28,6 +28,7 @@ jobs:
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.SUPABASE_CONNECTION_STRING }}
         run: |
+          test -n "$ConnectionStrings__DefaultConnection" || { echo "::error::Secret SUPABASE_CONNECTION_STRING is empty or not set"; exit 1; }
           dotnet tool install --global dotnet-ef --version 10.*
           EF_ARGS="--project Backend/SecureBooking.Infrastructure/SecureBooking.Infrastructure.csproj --startup-project Backend/SecureBooking.Api/SecureBooking.Api.csproj --configuration Release --no-build"
 
