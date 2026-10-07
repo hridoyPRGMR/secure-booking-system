@@ -53,7 +53,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-var migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", app.Environment.IsDevelopment());
+// Development: the app applies migrations itself. Production: the deploy workflow does.
+var migrateOnStartup = app.Environment.IsDevelopment();
 var seedEnabled = app.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment());
 
 var adminSeedConfigured = !string.IsNullOrWhiteSpace(app.Configuration["AdminSeed:Email"]);
