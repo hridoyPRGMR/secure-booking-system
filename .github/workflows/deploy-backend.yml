@@ -3,13 +3,18 @@ name: Deploy API
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
@@ -24,26 +29,11 @@ jobs:
       - name: Build
         run: dotnet build Backend/SecureBooking.Api/SecureBooking.Api.csproj -c Release --no-restore
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Load connection string from Azure app settings
-        env:
-          APP_NAME: hotel-booking-api
-          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-        run: |
-          test -n "$RESOURCE_GROUP" || { echo "::error::Repository variable AZURE_RESOURCE_GROUP is not set"; exit 1; }
-          CS=$(az webapp config appsettings list -g "$RESOURCE_GROUP" -n "$APP_NAME" --query "[?name=='ConnectionStrings__DefaultConnection'].value | [0]" -o tsv)
-          test -n "$CS" || { echo "::error::App setting ConnectionStrings__DefaultConnection not found on $APP_NAME"; exit 1; }
-          echo "::add-mask::$CS"
-          echo "ConnectionStrings__DefaultConnection=$CS" >> "$GITHUB_ENV"
-
       - name: Apply EF Core migrations
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
         run: |
+          test -n "$ConnectionStrings__DefaultConnection" || { echo "::error::Environment secret DB_CONNECTION_STRING is empty or not set"; exit 1; }
           dotnet tool install --global dotnet-ef --version 10.*
           EF_ARGS="--project Backend/SecureBooking.Infrastructure/SecureBooking.Infrastructure.csproj --startup-project Backend/SecureBooking.Api/SecureBooking.Api.csproj --configuration Release --no-build"
 
@@ -60,8 +50,29 @@ jobs:
       - name: Publish API
         run: dotnet publish Backend/SecureBooking.Api/SecureBooking.Api.csproj -c Release --no-build -o ./publish
 
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Deploy to Azure Web App
+        id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: hotel-booking-api
           package: ./publish
+
+      - name: Health check
+        env:
+          APP_URL: ${{ steps.deploy.outputs.webapp-url }}
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/health" || true)
+            echo "Attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::Health check failed at $APP_URL/health"
+          exit 1
