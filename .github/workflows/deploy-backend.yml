@@ -10,6 +10,7 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,8 +18,31 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Restore
+        run: dotnet restore Backend/SecureBooking.Api/SecureBooking.Api.csproj
+
+      - name: Build
+        run: dotnet build Backend/SecureBooking.Api/SecureBooking.Api.csproj -c Release --no-restore
+
+      - name: Apply EF Core migrations
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.SUPABASE_CONNECTION_STRING }}
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.*
+          EF_ARGS="--project Backend/SecureBooking.Infrastructure/SecureBooking.Infrastructure.csproj --startup-project Backend/SecureBooking.Api/SecureBooking.Api.csproj --configuration Release --no-build"
+
+          echo "::group::Migrations before"
+          dotnet ef migrations list $EF_ARGS
+          echo "::endgroup::"
+
+          dotnet ef database update $EF_ARGS --verbose
+
+          echo "::group::Migrations after"
+          dotnet ef migrations list $EF_ARGS
+          echo "::endgroup::"
+
       - name: Publish API
-        run: dotnet publish Backend/SecureBooking.Api/SecureBooking.Api.csproj -c Release -o ./publish
+        run: dotnet publish Backend/SecureBooking.Api/SecureBooking.Api.csproj -c Release --no-build -o ./publish
 
       - name: Azure Login
         uses: azure/login@v2

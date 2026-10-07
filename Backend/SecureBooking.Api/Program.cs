@@ -53,7 +53,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-var migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", true);
+var migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", app.Environment.IsDevelopment());
 var seedEnabled = app.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment());
 
 var adminSeedConfigured = !string.IsNullOrWhiteSpace(app.Configuration["AdminSeed:Email"]);
@@ -62,13 +62,16 @@ if (migrateOnStartup || seedEnabled || adminSeedConfigured)
 {
     using var startupScope = app.Services.CreateScope();
     var dbContext = startupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var seedLogger = startupScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     if (migrateOnStartup)
     {
+        var pending = (await dbContext.Database.GetPendingMigrationsAsync()).ToList();
+        seedLogger.LogInformation(
+            "Applying {Count} pending migration(s) on startup: {Migrations}",
+            pending.Count, pending);
         await dbContext.Database.MigrateAsync();
     }
-
-    var seedLogger = startupScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     if (adminSeedConfigured)
     {
