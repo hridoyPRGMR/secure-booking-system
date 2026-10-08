@@ -7,15 +7,21 @@ public class User : Entity
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    public string FullName => $"{FirstName} {LastName}";
     public string Email { get; set; }
     public string PasswordHash { get; private set; } = default!;
     public bool IsActive { get; private set; }
+    public string? PhoneNumber { get; set; }
+    public string? ProfilePictureUrl { get; set; }
 
     public string? RefreshTokenHash { get; private set; }
     public DateTime? RefreshTokenExpiry { get; private set; }
 
     private readonly List<Role> _roles = new();
     public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
+
+    private readonly List<ExternalLogin> _externalLogins = new();
+    public IReadOnlyCollection<ExternalLogin> ExternalLogins => _externalLogins.AsReadOnly();
 
     private User() { }
 

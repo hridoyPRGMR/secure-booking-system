@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SecureBooking.Api.Infrastructure;
 using SecureBooking.Application.Features.Authentication.Commands.Login;
 using SecureBooking.Application.Features.Authentication.Commands.Logout;
 using SecureBooking.Application.Features.Authentication.Commands.Refresh;
@@ -11,7 +12,7 @@ namespace SecureBooking.Api.Controllers
     [Route("api/auth")]
     public class AuthenticationController(IMediator mediator) : ControllerBase
     {
-        private const string RefreshTokenCookieName = "refreshToken";
+        private const string RefreshTokenCookieName = RefreshTokenCookies.Name;
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterCommand command, CancellationToken cancellationToken)
@@ -67,17 +68,6 @@ namespace SecureBooking.Api.Controllers
         }
 
         private void AppendRefreshTokenCookie(string refreshToken, DateTime expiresAt)
-        {
-            Response.Cookies.Append(
-                RefreshTokenCookieName,
-                refreshToken,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = expiresAt
-                });
-        }
+            => RefreshTokenCookies.Append(Response, refreshToken, expiresAt);
     }
 }

@@ -18,4 +18,5 @@ public interface IApplicationDbContext
     DbSet<Location> Locations { get; }
     DbSet<Role> Roles { get; }
     DbSet<Permission> Permissions { get; }
+    DbSet<ExternalLogin> ExternalLogins { get; }
 }

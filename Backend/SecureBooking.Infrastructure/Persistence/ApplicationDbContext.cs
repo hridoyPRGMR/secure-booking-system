@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<Permission> Permissions { get; set; } = null!;
+    public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
 
     Task<int> IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
@@ -150,6 +151,22 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
             b.HasOne(t => t.User)
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ExternalLogin>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.Provider).IsRequired().HasMaxLength(50);
+            b.Property(e => e.ProviderUserId).IsRequired().HasMaxLength(255);
+
+            // The same external identity can never be linked to more than one user.
+            b.HasIndex(e => new { e.Provider, e.ProviderUserId }).IsUnique();
+            b.HasIndex(e => e.UserId);
+
+            b.HasOne(e => e.User)
+                .WithMany(u => u.ExternalLogins)
+                .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

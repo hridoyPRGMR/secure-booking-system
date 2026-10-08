@@ -111,3 +111,6 @@ app.MapHealthChecks("/health");
 
 app.Run();
 
+// Exposed so integration tests can host the API with WebApplicationFactory<Program>.
+public partial class Program;
+

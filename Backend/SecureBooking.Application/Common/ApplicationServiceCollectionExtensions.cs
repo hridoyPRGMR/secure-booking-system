@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using SecureBooking.Application.Behaviors;
+using SecureBooking.Application.Features.Authentication;
 
 namespace SecureBooking.Application.Common;
 
@@ -11,6 +12,8 @@ public static class ApplicationServiceCollectionExtensions
     {
         services.AddMediatR(typeof(ApplicationServiceCollectionExtensions).Assembly);
         services.AddValidatorsFromAssembly(typeof(ApplicationServiceCollectionExtensions).Assembly);
+
+        services.AddScoped<AuthSessionIssuer>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
