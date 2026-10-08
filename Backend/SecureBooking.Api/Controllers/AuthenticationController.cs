@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SecureBooking.Api.Infrastructure;
 using SecureBooking.Application.Features.Authentication.Commands.Login;
 using SecureBooking.Application.Features.Authentication.Commands.Logout;
+using SecureBooking.Application.Features.Authentication.Commands.PasswordReset;
 using SecureBooking.Application.Features.Authentication.Commands.Refresh;
 using SecureBooking.Application.Features.Authentication.Commands.Register;
 
@@ -36,7 +38,25 @@ namespace SecureBooking.Api.Controllers
             return Ok(response);
         }
 
+        /// <summary>Always 204, whether or not the email has an account (prevents account enumeration).</summary>
+        [HttpPost("forgot-password")]
+        [EnableRateLimiting(RateLimitPolicies.ForgotPassword)]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command, CancellationToken cancellationToken)
+        {
+            await mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+
+        [HttpPost("reset-password")]
+        [EnableRateLimiting(RateLimitPolicies.ResetPassword)]
+        public async Task<IActionResult> ResetPassword(ResetPasswordCommand command, CancellationToken cancellationToken)
+        {
+            await mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+
         [HttpPost("refresh-token")]
+        [RequireAllowedOrigin]
         public async Task<IActionResult> RefreshToken(
             CancellationToken cancellationToken)
         {
@@ -55,6 +75,7 @@ namespace SecureBooking.Api.Controllers
         }
 
         [HttpPost("logout")]
+        [RequireAllowedOrigin]
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
             var refreshToken = Request.Cookies[RefreshTokenCookieName];

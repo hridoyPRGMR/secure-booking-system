@@ -22,6 +22,10 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
     public FakeGoogleIdentityProvider Google { get; } = new();
+    public FakeEmailSender Email { get; } = new();
+
+    /// <summary>Forgot-password requests allowed per window; high by default so unrelated tests never hit the limiter.</summary>
+    public int ForgotPasswordLimit { get; init; } = 1000;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -31,6 +35,10 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("JwtSettings:Secret", "test-secret-test-secret-test-secret-1234567890");
         builder.UseSetting("Authentication:Google:RedirectUri", "http://api.test/api/auth/google/callback");
         builder.UseSetting("Authentication:Google:FrontendCallbackUrl", FrontendCallback);
+        builder.UseSetting("Email:FrontendBaseUrl", "http://frontend.test");
+        builder.UseSetting("RateLimiting:ForgotPassword:PermitLimit", ForgotPasswordLimit.ToString());
+        builder.UseSetting("RateLimiting:ResetPassword:PermitLimit", "1000");
+        builder.UseSetting("RateLimiting:LinkGoogle:PermitLimit", "1000");
 
         builder.ConfigureServices(services =>
         {
@@ -40,6 +48,9 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<IGoogleIdentityProvider>();
             services.AddSingleton<IGoogleIdentityProvider>(Google);
+
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Email);
         });
     }
 
@@ -64,6 +75,24 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
     {
         base.Dispose(disposing);
         if (disposing) _connection.Dispose();
+    }
+}
+
+public sealed class FakeEmailSender : IEmailSender
+{
+    public sealed record SentEmail(string To, string Subject, string Html);
+
+    private readonly List<SentEmail> _sent = new();
+
+    public IReadOnlyList<SentEmail> For(string to)
+    {
+        lock (_sent) return _sent.Where(e => e.To.Equals(to, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public Task SendAsync(string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
+    {
+        lock (_sent) _sent.Add(new SentEmail(toEmail, subject, htmlBody));
+        return Task.CompletedTask;
     }
 }
 

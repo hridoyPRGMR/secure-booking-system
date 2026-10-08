@@ -24,6 +24,7 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<Permission> Permissions { get; set; } = null!;
     public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
 
     Task<int> IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         => base.SaveChangesAsync(cancellationToken);
@@ -147,6 +148,19 @@ public class ApplicationDbContext : DbContext, IUnitOfWork, IApplicationDbContex
             b.HasKey(t => t.Id);
             b.Property(t => t.TokenHash).IsRequired();
             b.HasIndex(t => t.TokenHash).IsUnique();
+
+            b.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.Property(t => t.TokenHash).IsRequired().HasMaxLength(128);
+            b.HasIndex(t => t.TokenHash).IsUnique();
+            b.HasIndex(t => t.UserId);
 
             b.HasOne(t => t.User)
                 .WithMany()

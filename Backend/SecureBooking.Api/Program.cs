@@ -20,6 +20,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddAuthorization();
+builder.Services.AddAuthRateLimiting(builder.Configuration);
 builder.Services.AddHealthChecks();
 
 builder.Services.AddControllers()
@@ -86,6 +87,8 @@ if (migrateOnStartup || seedEnabled || adminSeedConfigured)
     }
 }
 
+app.UseForwardedHeaders();
+
 app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
@@ -101,6 +104,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors(CorsPolicy);
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

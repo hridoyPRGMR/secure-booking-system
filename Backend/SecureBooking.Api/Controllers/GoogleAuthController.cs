@@ -3,6 +3,7 @@ using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using SecureBooking.Api.Infrastructure;
 using SecureBooking.Application.Common.Authentication;
@@ -120,6 +121,7 @@ public class GoogleAuthController(
 
     /// <summary>Confirms ownership of the existing account (password) and links the Google identity to it.</summary>
     [HttpPost("link")]
+    [EnableRateLimiting(RateLimitPolicies.LinkGoogle)]
     public async Task<IActionResult> Link(LinkGoogleAccountCommand command, CancellationToken cancellationToken)
     {
         var response = await mediator.Send(command, cancellationToken);

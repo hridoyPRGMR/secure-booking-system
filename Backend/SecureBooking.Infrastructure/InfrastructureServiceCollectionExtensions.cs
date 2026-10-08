@@ -62,6 +62,10 @@ public static class InfrastructureServiceCollectionExtensions
             client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScoped<ILinkTicketService, LinkTicketService>();
 
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+        services.Configure<ResendSettings>(configuration.GetSection(ResendSettings.SectionName));
+        services.AddHttpClient<IEmailSender, ResendEmailSender>(client => client.Timeout = TimeSpan.FromSeconds(10));
+
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository,UserRepository>();
         services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
