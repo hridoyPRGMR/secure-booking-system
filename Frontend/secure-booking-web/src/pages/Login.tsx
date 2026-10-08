@@ -97,9 +97,9 @@ export default function Login() {
                 Remember me
               </label>
 
-              <button type="button" className="link link-primary">
+              <Link to="/forgot-password" className="link link-primary">
                 Forgot password?
-              </button>
+              </Link>
             </div>
 
             <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">

@@ -22,6 +22,15 @@ export const authService = {
     return response.data
   },
 
+  // Always succeeds (204) whether or not the email has an account.
+  forgotPassword: async (email: string): Promise<void> => {
+    await axiosClient.post('/auth/forgot-password', { email })
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    await axiosClient.post('/auth/reset-password', { token, newPassword })
+  },
+
   refresh: async (): Promise<RefreshResponse> => {
     const response = await axiosClient.post<RefreshResponse>('/auth/refresh-token')
     return response.data

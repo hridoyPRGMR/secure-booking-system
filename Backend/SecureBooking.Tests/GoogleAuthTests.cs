@@ -397,6 +397,28 @@ public class GoogleAuthTests(TestApiFactory factory) : IClassFixture<TestApiFact
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    // ---- CSRF: cookie endpoints only accept allowed browser origins ---------------------------------
+
+    [Fact]
+    public async Task RefreshAndLogout_RejectDisallowedOrigins_ButAcceptAllowedOnes()
+    {
+        var result = await SignInWithGoogleAsync(Identity(UniqueEmail("csrf-origin")));
+
+        async Task<HttpStatusCode> Post(string path, string? origin)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, path);
+            request.Headers.Add("Cookie", $"refreshToken={result.RefreshCookie}");
+            if (origin is not null) request.Headers.Add("Origin", origin);
+            return (await factory.CreateManualClient().SendAsync(request)).StatusCode;
+        }
+
+        Assert.Equal(HttpStatusCode.Forbidden, await Post("/api/auth/refresh-token", "https://evil.example"));
+        Assert.Equal(HttpStatusCode.Forbidden, await Post("/api/auth/logout", "https://evil.example"));
+
+        // The rejected attempts must not have consumed/revoked the session.
+        Assert.Equal(HttpStatusCode.OK, await Post("/api/auth/refresh-token", "http://localhost:5173"));
+    }
+
     // ---- profile page endpoints ----------------------------------------------------------------
 
     [Fact]

@@ -10,5 +10,8 @@ namespace SecureBooking.Application.Features.Authentication
 
         public int AccessTokenExpirationMinutes { get; init; } = 15;
         public int RefreshTokenExpirationDays { get; init; } = 30;
+
+        /// <summary>SameSite for the refresh cookie: Strict (default), Lax or None (cross-site SPA + API).</summary>
+        public string RefreshCookieSameSite { get; init; } = "Strict";
     }
 }

@@ -19,4 +19,5 @@ public interface IApplicationDbContext
     DbSet<Role> Roles { get; }
     DbSet<Permission> Permissions { get; }
     DbSet<ExternalLogin> ExternalLogins { get; }
+    DbSet<PasswordResetToken> PasswordResetTokens { get; }
 }
