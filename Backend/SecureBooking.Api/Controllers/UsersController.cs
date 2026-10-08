@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecureBooking.Application.Common.Security;
 using SecureBooking.Application.Features.Users;
+using SecureBooking.Application.Features.Users.Profile;
 
 namespace SecureBooking.Api.Controllers;
 
@@ -11,6 +12,23 @@ namespace SecureBooking.Api.Controllers;
 [Route("api/users")]
 public class UsersController(IMediator mediator) : ControllerBase
 {
+    // Self-service: any authenticated user manages their own profile, no permission policy required.
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
+        => Ok(await mediator.Send(new GetMyProfileQuery(), cancellationToken));
+
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMe(UpdateMyProfileCommand command, CancellationToken cancellationToken)
+        => Ok(await mediator.Send(command, cancellationToken));
+
+    [HttpPost("me/password")]
+    public async Task<IActionResult> ChangeMyPassword(ChangeMyPasswordCommand command, CancellationToken cancellationToken)
+    {
+        await mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
     [HttpGet]
     [Authorize(Policy = Policies.UsersView)]
     public async Task<IActionResult> List(

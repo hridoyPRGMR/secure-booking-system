@@ -6,9 +6,9 @@ import axios, {
 } from 'axios'
 import { tokenStore } from '../lib/tokenStore'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5212/api'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5212/api'
 
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh-token']
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh-token', '/auth/google/link']
 
 function isAuthEndpoint(url?: string): boolean {
   if (!url) return false
@@ -16,7 +16,7 @@ function isAuthEndpoint(url?: string): boolean {
 }
 
 const axiosClient = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   // Sends/receives the HttpOnly refresh-token cookie on every request.
   withCredentials: true,
@@ -25,7 +25,7 @@ const axiosClient = axios.create({
 // Separate, interceptor-free client for the refresh call itself so a 401
 // from /auth/refresh-token can never re-enter the response interceptor below.
 const refreshClient = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })

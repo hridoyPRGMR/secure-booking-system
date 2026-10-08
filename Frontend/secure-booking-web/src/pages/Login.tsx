@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-toastify'
 
 import { useAuth } from '../hooks/useAuth'
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
 import { loginSchema, LoginFormData } from '../features/auth/authValidation'
 
 export default function Login() {
@@ -105,6 +106,10 @@ export default function Login() {
               {isSubmitting ? 'Logging in...' : 'Login'}
             </button>
           </form>
+
+          <div className="divider my-0 text-xs text-base-content/50">OR</div>
+
+          <GoogleSignInButton returnUrl={navigateTo} disabled={isSubmitting} />
 
           <p className="text-center text-sm text-base-content/60">
             Don't have an account?{' '}

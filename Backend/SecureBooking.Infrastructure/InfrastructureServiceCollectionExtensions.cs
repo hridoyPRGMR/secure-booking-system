@@ -56,6 +56,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IRefreshTokenGenerator,RefreshTokenGenerator>();
         services.AddScoped<IRefreshTokenService,RefreshTokenService>();
 
+        services.Configure<GoogleAuthSettings>(
+            configuration.GetSection(GoogleAuthSettings.SectionName));
+        services.AddHttpClient<IGoogleIdentityProvider, GoogleIdentityProvider>(
+            client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddScoped<ILinkTicketService, LinkTicketService>();
+
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository,UserRepository>();
         services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();

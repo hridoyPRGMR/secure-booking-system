@@ -25,6 +25,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<AuthActionResult>
   register: (payload: RegisterRequest) => Promise<AuthActionResult>
   logout: () => Promise<void>
+  linkGoogle: (ticket: string, password: string) => Promise<AuthActionResult>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -130,9 +131,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const linkGoogle = useCallback(
+    async (ticket: string, password: string): Promise<AuthActionResult> => {
+      try {
+        const response = await authService.linkGoogle(ticket, password)
+        tokenStore.set(response.accessToken)
+        setUser({
+          id: response.userId,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          email: response.email,
+        })
+        return { success: true }
+      } catch (error) {
+        return extractError(error)
+      }
+    },
+    []
+  )
+
   const value = useMemo<AuthContextType>(
-    () => ({ user, isAuthenticated: user !== null, isLoading, login, register, logout }),
-    [user, isLoading, login, register, logout]
+    () => ({ user, isAuthenticated: user !== null, isLoading, login, register, logout, linkGoogle }),
+    [user, isLoading, login, register, logout, linkGoogle]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
