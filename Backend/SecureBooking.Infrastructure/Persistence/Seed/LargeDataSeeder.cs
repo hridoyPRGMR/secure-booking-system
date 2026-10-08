@@ -10,18 +10,18 @@ using SecureBooking.Shared.Enums;
 namespace SecureBooking.Infrastructure.Persistence.Seed;
 
 /// <summary>
-/// Generates ~100k rows of example data (Users, Locations, Hotels, Rooms, Bookings)
+/// Generates ~20k rows of example data (Users, Locations, Hotels, Rooms, Bookings)
 /// for local load-testing / demo purposes. Idempotent: skipped once Users already
 /// meets UserCount, so it only runs once against a fresh database.
 /// </summary>
 public static class LargeDataSeeder
 {
-    private const int UserCount = 100_000;
-    private const int LocationCount = 300;
-    private const int HotelCount = 1_500;
-    private const int RoomCount = 15_000;
-    private const int BookingCount = 400_000;
-    private const int BatchSize = 2_000;
+    private const int UserCount = 3_000;
+    private const int LocationCount = 100;
+    private const int HotelCount = 400;
+    private const int RoomCount = 2_000;
+    private const int BookingCount = 14_500;
+    private const int BatchSize = 40_000;
 
     // BCrypt hash of "Password123!" - shared by all seeded users, hashed once for speed.
     private const string SeedUserPasswordHash = "$2a$11$ldpMMEtVAv7G.g2PffJeW.wuvYGyiXicfz50lajxDdWEpZaOGJv2u";
